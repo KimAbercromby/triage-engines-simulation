@@ -327,15 +327,13 @@
   <!-- ===== escalation ===== -->
   <div class="escalation">
     <h3>Escalation triggers — the safety net</h3>
-    <p>Three of the seven triggers shown. Any single one forces the system to the top of both engines,
-      regardless of the scores above — routed to comprehensive assurance and mandatory notification.</p>
+    <p>Three of the seven triggers shown. Any single one floors the risk tier — to High, or to Critical for statutory decisions or unreviewed agentic action — and mandates Board approval and comprehensive assurance, regardless of the scores above. Triggers uplift the risk pathway, not the priority score.</p>
     <div class="trigs">
       <label class="trig"><input type="checkbox" class="trig-in" id="t1">Special-category data</label>
       <label class="trig"><input type="checkbox" class="trig-in" id="t2">Statutory decisions</label>
       <label class="trig"><input type="checkbox" class="trig-in" id="t3">Agentic action, no per-action review</label>
     </div>
-    <div class="banner" id="banner">Escalation trigger met — Priority 1 and Critical enforced,
-      mandatory notification required.</div>
+    <div class="banner" id="banner">Escalation trigger met — risk tier floored to <b id="bannerTier">High</b>; Board approval and comprehensive assurance required.</div>
   </div>
 
   <!-- ===== divergence teaching note ===== -->
@@ -416,6 +414,12 @@
     if(v<=10) return {name:"Medium",  colour:"var(--med)",  rank:2};
     if(v<=15) return {name:"High",    colour:"var(--high)", rank:3};
     return          {name:"Critical",colour:"var(--crit)", rank:4};
+  }
+  function tierByRank(rank){
+    if(rank>=4) return {name:"Critical",colour:"var(--crit)", rank:4};
+    if(rank===3) return {name:"High",   colour:"var(--high)",rank:3};
+    if(rank===2) return {name:"Medium", colour:"var(--med)", rank:2};
+    return             {name:"Low",     colour:"var(--low)", rank:1};
   }
   function anyTrigger(){ return state.t1||state.t2||state.t3; }
 
@@ -504,7 +508,7 @@
       fillEl.appendChild(seg);
     });
     var score=agpiScore(), band=agpiBand(score);
-    var forced=anyTrigger();
+    var forced=false;  // triggers uplift the risk pathway, not AGPI priority (§4.4.6)
     var aRes=document.getElementById("agpiResult");
     document.getElementById("agpiScore").textContent=score.toFixed(1);
     document.getElementById("agpiBandNum").textContent=band.n;
@@ -541,13 +545,22 @@
       '<span class="box">inherent <b>'+inh+'</b></span><span class="op">× ('+state.control+'÷5)</span>'+
       '<span class="op">=</span><span class="box">residual <b>'+res.toFixed(1)+'</b></span>';
 
-    var tier=riskTier(res), rForced=anyTrigger();
+    var tier=riskTier(res);
+    // §4.4.6: any trigger floors the risk tier to at least High; statutory (t2)
+    // or unreviewed agentic action (t3) floors it to Critical.
+    var criticalTrig=state.t2||state.t3;
+    var floorRank=criticalTrig?4:(anyTrigger()?3:0);
+    var effTier=tierByRank(Math.max(tier.rank,floorRank));
+    var rForced=effTier.rank>tier.rank;
     var rRes=document.getElementById("riskResult");
     document.getElementById("riskScore").textContent=res.toFixed(1);
     document.getElementById("riskTier").textContent=tier.name;
     document.getElementById("tierDot").style.background=tier.colour;
-    document.getElementById("riskForced").style.display=rForced?"block":"none";
+    var rf=document.getElementById("riskForced");
+    rf.style.display=rForced?"block":"none";
+    rf.textContent=effTier.name+" \u2014 floored by escalation trigger";
     rRes.classList.toggle("overridden",rForced);
+    var bt=document.getElementById("bannerTier"); if(bt) bt.textContent=criticalTrig?"Critical":"High";
 
     // escalation banner
     document.getElementById("banner").classList.toggle("show",anyTrigger());
@@ -754,11 +767,10 @@
   <h2 id="triggers"><span class="n">05</span>Escalation triggers — a non-compensatory hard gate</h2>
   <p>Two independent axes create a risk of their own: a genuinely dangerous system could sit quietly low on
     both scores. Seven escalation triggers guard against exactly that. They operate as a logical
-    <strong>OR</strong> — a disjunctive override — sitting on top of both engines:</p>
-  <div class="formula">if <span class="c">any</span> trigger is met&nbsp;&rarr;&nbsp;force Priority 1 <span class="c">and</span> Critical<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="c">regardless of the calculated scores</span></div>
+    <strong>OR</strong> — a disjunctive override — sitting on top of the risk engine:</p>
+  <div class="formula">if <span class="c">any</span> trigger is met&nbsp;&rarr;&nbsp;risk tier = at least High<br>&nbsp;&nbsp;&nbsp;&nbsp;if <span class="c">statutory</span> or <span class="c">unreviewed agentic</span>&nbsp;&rarr;&nbsp;at least Critical<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="c">regardless of the calculated scores</span></div>
   <p>Special-category data, statutory decisions, and agentic action without per-action human
-    review are three of the seven. Any single one forces the system to the top of both engines and mandates
-    notification. Statistically this is a <em>knock-out criterion</em>: a hard constraint that cannot be
+    review are three of the seven. Any single one floors the risk tier (to Critical for statutory or unreviewed agentic action, otherwise High) and mandates Board approval and comprehensive assurance. Statistically this is a <em>knock-out criterion</em>: a hard constraint that cannot be
     traded off or averaged away, deliberately placed outside the scoring so that specific, well-understood
     hazards can never be scored into invisibility. The higher-band rounding rule performs a gentler version
     of the same protective job at every boundary.</p>
