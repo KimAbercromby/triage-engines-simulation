@@ -331,7 +331,7 @@
       regardless of the scores above — routed to comprehensive assurance and mandatory notification.</p>
     <div class="trigs">
       <label class="trig"><input type="checkbox" class="trig-in" id="t1">Special-category data</label>
-      <label class="trig"><input type="checkbox" class="trig-in" id="t2">Automated decisions about individuals</label>
+      <label class="trig"><input type="checkbox" class="trig-in" id="t2">Statutory decisions</label>
       <label class="trig"><input type="checkbox" class="trig-in" id="t3">Agentic action, no per-action review</label>
     </div>
     <div class="banner" id="banner">Escalation trigger met — Priority 1 and Critical enforced,
@@ -366,11 +366,11 @@
   ];
   // ---- Risk configuration ----
   var IMPACTS = [
-    {key:"safety",     name:"Safety & wellbeing"},
-    {key:"rights",     name:"Rights & fairness"},
-    {key:"financial",  name:"Financial"},
-    {key:"operational",name:"Operational continuity"},
-    {key:"reputation", name:"Reputational"}
+    {key:"safety",     name:"Resident impact"},
+    {key:"rights",     name:"Legal & regulatory impact"},
+    {key:"financial",  name:"Financial impact"},
+    {key:"operational",name:"Operational impact"},
+    {key:"reputation", name:"Reputational impact"}
   ];
 
   var state = {
@@ -398,12 +398,12 @@
     return s;
   }
   function agpiBand(score){
-    var v=Math.ceil(score-1e-9);
-    if(v>=80) return {n:1,name:"Highest"};
+    var v=score;  // band on the raw score (matches AGPI worksheet 06 and the calculator)
+    if(v>=80) return {n:1,name:"Critical"};
     if(v>=60) return {n:2,name:"High"};
-    if(v>=40) return {n:3,name:"Moderate"};
-    if(v>=20) return {n:4,name:"Low"};
-    return {n:5,name:"Minimal"};
+    if(v>=40) return {n:3,name:"Standard"};
+    if(v>=20) return {n:4,name:"Routine"};
+    return {n:5,name:"Observe"};
   }
   function maxImpact(){
     return Math.max(state.safety,state.rights,state.financial,state.operational,state.reputation);
@@ -678,11 +678,11 @@
   <table>
     <thead><tr><th class="num">AGPI</th><th>Band</th></tr></thead>
     <tbody>
-      <tr><td class="num">80&ndash;100</td><td>Priority 1 — Highest</td></tr>
+      <tr><td class="num">80&ndash;100</td><td>Priority 1 — Critical</td></tr>
       <tr><td class="num">60&ndash;79</td><td>Priority 2 — High</td></tr>
-      <tr><td class="num">40&ndash;59</td><td>Priority 3 — Moderate</td></tr>
-      <tr><td class="num">20&ndash;39</td><td>Priority 4 — Low</td></tr>
-      <tr><td class="num">below 20</td><td>Priority 5 — Minimal</td></tr>
+      <tr><td class="num">40&ndash;59</td><td>Priority 3 — Standard</td></tr>
+      <tr><td class="num">20&ndash;39</td><td>Priority 4 — Routine</td></tr>
+      <tr><td class="num">below 20</td><td>Priority 5 — Observe</td></tr>
     </tbody>
   </table>
 
@@ -756,7 +756,7 @@
     both scores. Seven escalation triggers guard against exactly that. They operate as a logical
     <strong>OR</strong> — a disjunctive override — sitting on top of both engines:</p>
   <div class="formula">if <span class="c">any</span> trigger is met&nbsp;&rarr;&nbsp;force Priority 1 <span class="c">and</span> Critical<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="c">regardless of the calculated scores</span></div>
-  <p>Special-category data, automated decisions about individuals, and agentic action without per-action human
+  <p>Special-category data, statutory decisions, and agentic action without per-action human
     review are three of the seven. Any single one forces the system to the top of both engines and mandates
     notification. Statistically this is a <em>knock-out criterion</em>: a hard constraint that cannot be
     traded off or averaged away, deliberately placed outside the scoring so that specific, well-understood
