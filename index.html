@@ -409,7 +409,7 @@
   function inherent(){ return state.likelihood*maxImpact(); }
   function residual(){ return inherent()*(state.control/5); }
   function riskTier(r){
-    var v=Math.ceil(r-1e-9);
+    var v=Math.round(r*10)/10;  // match the calculator exactly: round residual to 1dp, then tier by <=
     if(v<=5)  return {name:"Low",     colour:"var(--low)",  rank:1};
     if(v<=10) return {name:"Medium",  colour:"var(--med)",  rank:2};
     if(v<=15) return {name:"High",    colour:"var(--high)", rank:3};
@@ -510,7 +510,7 @@
     var score=agpiScore(), band=agpiBand(score);
     var forced=false;  // triggers uplift the risk pathway, not AGPI priority (§4.4.6)
     var aRes=document.getElementById("agpiResult");
-    document.getElementById("agpiScore").textContent=score.toFixed(1);
+    document.getElementById("agpiScore").textContent=score.toFixed(2);
     document.getElementById("agpiBandNum").textContent=band.n;
     document.getElementById("agpiBandName").textContent=band.name;
     document.getElementById("agpiForced").style.display=forced?"block":"none";
