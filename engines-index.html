@@ -7,7 +7,7 @@
 <style>
   :root{
     --navy:#122C47; --navy2:#1d3a5c; --navy3:#2f5680;
-    --gold:#C8AB36; --gold2:#d8c56f;
+    --gold:#C8AB36; --gold2:#d8c56f; --gold-ink:#7A6318;
     --cream:#F2F0E6; --paper:#FBFAF6;
     --grey:#7f8b9c; --grey2:#b7bcc6; --ink:#3d4a5c;
     --line:#d9dde4;
@@ -26,7 +26,7 @@
   .wrap{max-width:1160px;margin:0 auto}
 
   /* header */
-  .eyebrow{font-size:12px;font-weight:700;letter-spacing:.22em;color:var(--gold);
+  .eyebrow{font-size:12px;font-weight:700;letter-spacing:.22em;color:var(--gold-ink);
     text-transform:uppercase;margin:0 0 10px}
   h1{font-family:var(--sans);font-weight:700;color:var(--navy);
     font-size:clamp(26px,4vw,40px);line-height:1.08;margin:0 0 8px;letter-spacing:-.01em}
@@ -196,7 +196,7 @@
     padding:8px 16px;cursor:pointer}
   #mdlg .md-close:hover{background:var(--navy2)}
   #mdlg .md-close:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
-  #mdlg .eyebrow{font-size:12px;font-weight:700;letter-spacing:.22em;color:var(--gold);
+  #mdlg .eyebrow{font-size:12px;font-weight:700;letter-spacing:.22em;color:var(--gold-ink);
     text-transform:uppercase;margin:26px 0 10px}
   #mdlg h1{color:var(--navy);font-weight:700;font-size:clamp(26px,4vw,40px);line-height:1.08;
     margin:0 0 10px;letter-spacing:-.01em}
@@ -211,7 +211,7 @@
   @media(max-width:560px){#mdlg .toc ol{columns:1}}
   #mdlg h2{color:var(--navy);font-size:23px;font-weight:700;margin:44px 0 6px;letter-spacing:-.01em;
     padding-top:8px;border-top:1px solid var(--line)}
-  #mdlg h2 .n{font-family:var(--mono);font-size:14px;color:var(--gold);font-weight:700;margin-right:10px;vertical-align:2px}
+  #mdlg h2 .n{font-family:var(--mono);font-size:14px;color:var(--gold-ink);font-weight:700;margin-right:10px;vertical-align:2px}
   #mdlg h3{color:var(--navy2);font-size:17px;font-weight:700;margin:26px 0 4px}
   #mdlg p{margin:0 0 15px}
   #mdlg strong{color:var(--navy)}
@@ -228,7 +228,7 @@
   #mdlg .callout{background:#fff;border:1px solid var(--line);border-left:4px solid var(--navy);
     border-radius:0 10px 10px 0;padding:15px 18px;margin:22px 0;font-size:15px}
   #mdlg .callout.gold{border-left-color:var(--gold)}
-  #mdlg .callout .lab{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin:0 0 5px}
+  #mdlg .callout .lab{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-ink);margin:0 0 5px}
   #mdlg ul.tight{margin:6px 0 16px;padding-left:22px}
   #mdlg ul.tight li{margin:0 0 7px}
   #mdlg .refs{font-size:13.5px;color:var(--ink)}
@@ -327,13 +327,13 @@
   <!-- ===== escalation ===== -->
   <div class="escalation">
     <h3>Escalation triggers — the safety net</h3>
-    <p>Three of the seven triggers shown. Any single one floors the risk tier — to High, or to Critical for statutory decisions or unreviewed agentic action — and mandates Board approval and comprehensive assurance, regardless of the scores above. Triggers uplift the risk pathway, not the priority score.</p>
+    <p>Three of the seven triggers shown. Any single one floors the risk tier — to High, or to Critical for statutory decisions or unreviewed agentic action — and mandates comprehensive assurance and governance approval by the relevant forum under delegated authority, regardless of the scores above. Triggers uplift the risk pathway, not the priority score.</p>
     <div class="trigs">
       <label class="trig"><input type="checkbox" class="trig-in" id="t1">Special-category data</label>
       <label class="trig"><input type="checkbox" class="trig-in" id="t2">Statutory decisions</label>
       <label class="trig"><input type="checkbox" class="trig-in" id="t3">Agentic action, no per-action review</label>
     </div>
-    <div class="banner" id="banner">Escalation trigger met — risk tier floored to <b id="bannerTier">High</b>; Board approval and comprehensive assurance required.</div>
+    <div class="banner" id="banner">Escalation trigger met — risk tier floored to <b id="bannerTier">High</b>; comprehensive assurance and governance approval by the relevant forum under delegated authority required.</div>
   </div>
 
   <!-- ===== divergence teaching note ===== -->
@@ -409,7 +409,7 @@
   function inherent(){ return state.likelihood*maxImpact(); }
   function residual(){ return inherent()*(state.control/5); }
   function riskTier(r){
-    var v=Math.ceil(r-1e-9);
+    var v=Math.round(r*10)/10;  // match the calculator exactly: round residual to 1dp, then tier by <=
     if(v<=5)  return {name:"Low",     colour:"var(--low)",  rank:1};
     if(v<=10) return {name:"Medium",  colour:"var(--med)",  rank:2};
     if(v<=15) return {name:"High",    colour:"var(--high)", rank:3};
@@ -510,7 +510,7 @@
     var score=agpiScore(), band=agpiBand(score);
     var forced=false;  // triggers uplift the risk pathway, not AGPI priority (§4.4.6)
     var aRes=document.getElementById("agpiResult");
-    document.getElementById("agpiScore").textContent=score.toFixed(1);
+    document.getElementById("agpiScore").textContent=score.toFixed(2);
     document.getElementById("agpiBandNum").textContent=band.n;
     document.getElementById("agpiBandName").textContent=band.name;
     document.getElementById("agpiForced").style.display=forced?"block":"none";
@@ -770,7 +770,7 @@
     <strong>OR</strong> — a disjunctive override — sitting on top of the risk engine:</p>
   <div class="formula">if <span class="c">any</span> trigger is met&nbsp;&rarr;&nbsp;risk tier = at least High<br>&nbsp;&nbsp;&nbsp;&nbsp;if <span class="c">statutory</span> or <span class="c">unreviewed agentic</span>&nbsp;&rarr;&nbsp;at least Critical<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="c">regardless of the calculated scores</span></div>
   <p>Special-category data, statutory decisions, and agentic action without per-action human
-    review are three of the seven. Any single one floors the risk tier (to Critical for statutory or unreviewed agentic action, otherwise High) and mandates Board approval and comprehensive assurance. Statistically this is a <em>knock-out criterion</em>: a hard constraint that cannot be
+    review are three of the seven. Any single one floors the risk tier (to Critical for statutory or unreviewed agentic action, otherwise High) and mandates comprehensive assurance and governance approval by the relevant forum under delegated authority. Statistically this is a <em>knock-out criterion</em>: a hard constraint that cannot be
     traded off or averaged away, deliberately placed outside the scoring so that specific, well-understood
     hazards can never be scored into invisibility. The higher-band rounding rule performs a gentler version
     of the same protective job at every boundary.</p>
