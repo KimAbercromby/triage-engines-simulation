@@ -242,9 +242,10 @@
 
   <p class="eyebrow">AI Governance · Triage Engines</p>
   <h1>Watch each engine reach its answer</h1>
-  <p class="lede">Two independent engines run side by side. Move any input and the arithmetic updates live —
-    so you can see exactly how a <strong>priority band</strong> and a <strong>risk tier</strong> are produced,
-    and why blending them into one number would throw away what a governance team needs.</p>
+  <p class="lede">Two independent engines run side by side for every system. Move any input and the arithmetic
+    updates live — so you can see exactly how a <strong>priority band</strong> and a <strong>risk tier</strong>
+    are produced, and why blending them into one number would throw away what a governance team needs. A third
+    engine, further down, scores the <strong>agency tier</strong> for systems that can act.</p>
   <p class="methodline">For the full derivation, read the
     <button type="button" class="doclink mdlg-open">methodology &amp; statistical basis</button>.</p>
   <hr class="rule">
@@ -341,6 +342,37 @@
     <b>Notice what just happened.</b> <span id="divergeText"></span>
     This is the spine of the design: a single blended score would have hidden it.
   </div>
+
+  <!-- ===== ENGINE 3 — AGENCY TIER ===== -->
+  <style>
+    #agencyPanel{margin-top:26px;border-top:4px solid #9B1C1C}
+    #agencyPanel .agrow{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;margin:10px 0}
+    #agencyPanel .agrow .name{font-weight:600;color:var(--navy)}
+    #agencyPanel .agrow .val{font-weight:700;color:#9B1C1C;min-width:2ch;text-align:right}
+    #agencyPanel input[type=range]{grid-column:1 / -1;width:100%}
+    #agencyPanel .aghint{font-size:12.5px;color:var(--muted);font-weight:500}
+    #agencyPanel .floors{margin-top:14px;font-size:14px}
+    #agencyPanel .floor{display:block;margin:4px 0;color:var(--muted)}
+    #agencyPanel .floor.on{color:#8a2a2a;font-weight:600}
+    #agencyResult{margin-top:16px;display:flex;align-items:baseline;gap:12px}
+    #agencyResult .score{font-size:2.2em;font-weight:800;color:#e6b8b8}
+    #agtierName{font-weight:700;color:#fff}
+    #agencyBase{color:var(--muted);font-size:14px;margin-top:6px}
+  </style>
+  <section class="panel" id="agencyPanel">
+    <h2>Engine 3 — Agency tier</h2>
+    <div class="title">For systems that can act (agents)</div>
+    <p class="method">base tier = max( autonomy, authority )&nbsp;&nbsp;→&nbsp;&nbsp;floors raise it, never lower&nbsp;&nbsp;→&nbsp;&nbsp;T0–T5</p>
+    <p class="aghint">The first two engines score every AI system. This third engine runs only when the answer to <b>can it act?</b> is yes. It reads the agent as a <b>profile across five dimensions</b>, not a single sum: the base comes from how much it can do unaided, and any high-consequence or hard-to-contain reading floors the tier upward.</p>
+    <div id="agencyRows"></div>
+    <div class="floors" id="agencyFloors"></div>
+    <div class="result" id="agencyResult" aria-live="polite">
+      <span class="score" id="agtier">T1</span>
+      <span class="band"><span id="agtierName">Assisted</span><span class="bandsub" id="agtierRoute"></span></span>
+    </div>
+    <div id="agencyBase"></div>
+    <p class="takeaway">Agency is about <b>what it can do and how well you can stop it</b>. Raise autonomy or authority and the base climbs; drop controllability or raise consequence and a floor lifts the tier regardless of the base. The profile, not an average, decides.</p>
+  </section>
 
   <footer>
     Runs entirely in the browser. Stores no data. Single self-contained file, no dependencies. Decision support only.
@@ -625,6 +657,7 @@
       <li><a href="#agpi">The Priority engine (AGPI)</a></li>
       <li><a href="#risk">The Risk engine</a></li>
       <li><a href="#aggregation">Sum vs maximum: why they differ</a></li>
+      <li><a href="#agency">The agency-tier engine: profile, not sum</a></li>
       <li><a href="#triggers">Escalation triggers as a hard gate</a></li>
       <li><a href="#separate">Why not one blended score</a></li>
       <li><a href="#limits">Limits and honest caveats</a></li>
@@ -763,6 +796,31 @@
   <p>Using a sum for priority and a maximum for impact is not an inconsistency in the framework; it is the
     framework encoding two genuinely different kinds of judgement in the mathematics itself.</p>
 
+  <!-- ===== agency ===== -->
+  <h2 id="agency"><span class="n">4a</span>The agency-tier engine — profile, not sum</h2>
+  <p>The priority and risk engines score every AI system. A third engine runs only when the answer to
+    <em>can it act?</em> is yes, because an agent needs governing on what it can do, not only on how important
+    or how risky it is. It reads the system as a <strong>profile across five dimensions</strong> —
+    consequence, autonomy, authority, reach and controllability — and turns that profile into an agency tier
+    from T0 to T5.</p>
+  <ul class="tight">
+    <li><strong>The base is a maximum, not a sum.</strong> The base tier is
+      <code>max(autonomy, authority)</code>: the most the agent can do unaided. Averaging would let a high
+      authority be diluted by low scores elsewhere, which is exactly the wrong behaviour for delegated power.</li>
+    <li><strong>Floors only ever raise.</strong> Certain readings lift the tier above the base and can never
+      lower it: high consequence or low controllability floors to at least T3; catastrophic consequence or an
+      effectively irreversible action, whole-estate reach, or open-ended autonomy floor to at least T4; a
+      severe-and-hard-to-contain combination reaches T5.</li>
+    <li><strong>The profile decides, not an average.</strong> A clever model wired to nothing stays low; a
+      modest model wired to payments and irreversible external action rises, because the tier follows the
+      shape of the profile, not a blended score.</li>
+  </ul>
+  <p>The tier then sets the route: T0 a standard record, T1 the ordinary AI review, T2 to T3 agentic controls
+    review at rising gates, T4 a high-agency review, and T5 executive and safety escalation. The thresholds are
+    the framework's own rule and are tunable; the design point is that agency is treated as a profile with
+    safety floors, in the same non-compensatory spirit as the risk engine's maximum. The interactive Engine 3
+    above lets you watch a floor lift the tier as you move the sliders.</p>
+
   <!-- ===== 5 ===== -->
   <h2 id="triggers"><span class="n">05</span>Escalation triggers — a non-compensatory hard gate</h2>
   <p>Two independent axes create a risk of their own: a genuinely dangerous system could sit quietly low on
@@ -868,6 +926,72 @@
     a.addEventListener("click",function(e){e.preventDefault();
       var t=mdlg.querySelector(this.getAttribute("href"));
       if(t)t.scrollIntoView({behavior:"smooth",block:"start"});});});
+})();
+</script>
+
+<script>
+/* ===== Engine 3 — Agency tier (self-contained) ===== */
+(function(){
+  "use strict";
+  var DIMS=[
+    {key:"consequence", name:"Consequence",   hint:"0 trivial to 5 catastrophic / irreversible"},
+    {key:"autonomy",    name:"Autonomy",      hint:"0 no action to 5 open-ended / persistent"},
+    {key:"authority",   name:"Authority",     hint:"0 information only to 5 highly consequential"},
+    {key:"reach",       name:"Reach",         hint:"0 isolated to 5 broad / public / physical"},
+    {key:"controllability", name:"Controllability (reversed)", hint:"0 instant stop + rollback to 5 effectively irreversible"}
+  ];
+  var TIERS=["T0","T1","T2","T3","T4","T5"];
+  var NAMES=["Informational","Assisted","Bounded agent","Consequential agent","High-agency","Exceptional / high-consequence"];
+  var ROUTES=["standard record only","standard AI review","agentic controls review","agentic controls, higher gate","high-agency review","executive & safety escalation"];
+  var st={consequence:2,autonomy:2,authority:2,reach:2,controllability:1};
+  var rowsEl=document.getElementById("agencyRows");
+  if(!rowsEl) return;
+  DIMS.forEach(function(d){
+    var row=document.createElement("div"); row.className="agrow";
+    row.innerHTML=
+      '<div class="name">'+d.name+' <span class="aghint">'+d.hint+'</span></div>'+
+      '<div class="val" id="ag_v_'+d.key+'">'+st[d.key]+'</div>'+
+      '<input type="range" min="0" max="5" step="1" value="'+st[d.key]+'" id="ag_r_'+d.key+'" aria-label="'+d.name+', 0 to 5">';
+    rowsEl.appendChild(row);
+  });
+  function compute(){
+    // Mirrors the Multi-Board Triage Calculator's agency engine exactly.
+    // Controllability is REVERSED: 0 = instant stop + rollback, 5 = effectively irreversible.
+    var base=Math.max(st.autonomy, st.authority); // 0-5 maps to T0-T5
+    var tier=base;
+    var applied=[];
+    var raiseTo=function(n,label){ if(n>tier) tier=n; if(n>base) applied.push(label); };
+    if(st.consequence>=4 || st.controllability>=4) raiseTo(3,"High consequence or low controllability → at least T3");
+    if(st.consequence===5) raiseTo(4,"Potentially catastrophic consequence → at least T4");
+    if(st.controllability===5) raiseTo(4,"Effectively irreversible → at least T4");
+    if(st.reach===5) raiseTo(4,"Broad, public or physical reach → at least T4");
+    if(st.autonomy===5) raiseTo(4,"Open-ended autonomy → at least T4");
+    if(st.consequence>=4 && st.controllability>=4) raiseTo(5,"Severe and hard to contain → T5");
+    return {base:base, tier:tier, applied:applied};
+  }
+  function render(){
+    DIMS.forEach(function(d){ document.getElementById("ag_v_"+d.key).textContent=st[d.key]; });
+    var r=compute();
+    document.getElementById("agtier").textContent=TIERS[r.tier];
+    document.getElementById("agtierName").textContent=NAMES[r.tier];
+    document.getElementById("agtierRoute").textContent=ROUTES[r.tier];
+    document.getElementById("agencyBase").textContent=
+      "Base tier "+TIERS[r.base]+" (from max of autonomy "+st.autonomy+" and authority "+st.authority+")"+
+      (r.tier>r.base ? ", raised to "+TIERS[r.tier]+" by a floor." : "; no floor raised it.");
+    var f=document.getElementById("agencyFloors");
+    if(r.applied.length){
+      f.innerHTML='<b style="color:#8a2a2a;font-size:11px;letter-spacing:.06em;text-transform:uppercase">Floors that fired</b>'+
+        r.applied.map(function(x){return '<span class="floor on">↑ '+x+'</span>';}).join('');
+    } else {
+      f.innerHTML='<span class="floor">No floor fired: the tier is the base. Raise consequence, reach or autonomy, or drop controllability, to see a floor lift it.</span>';
+    }
+  }
+  DIMS.forEach(function(d){
+    document.getElementById("ag_r_"+d.key).addEventListener("input",function(e){
+      st[d.key]=Number(e.target.value); render();
+    });
+  });
+  render();
 })();
 </script>
 </body>
