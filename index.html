@@ -820,6 +820,11 @@
     the framework's own rule and are tunable; the design point is that agency is treated as a profile with
     safety floors, in the same non-compensatory spirit as the risk engine's maximum. The interactive Engine 3
     above lets you watch a floor lift the tier as you move the sliders.</p>
+  <p><strong>Where it comes from.</strong> The five agency dimensions, the autonomy scale and the safety
+    floors are derived from OWASP's 2026 agentic guidance, in particular the Top 10 for Agentic Applications
+    and the Agent Control Standard, alongside the framework's own agentic triage method. Full citations are in
+    the References below, and the source project is the
+    <a href="https://genai.owasp.org/" target="_blank" rel="noopener">OWASP GenAI Security Project</a>.</p>
 
   <!-- ===== 5 ===== -->
   <h2 id="triggers"><span class="n">05</span>Escalation triggers — a non-compensatory hard gate</h2>
@@ -881,8 +886,13 @@
   <p>The techniques here are standard ones, drawn together for this purpose rather than invented for it.
     The weighted-sum model draws on multi-attribute value theory; the likelihood-by-impact structure and
     the inherent-versus-residual distinction follow established risk-management practice; and the caveats
-    reflect the well-known critique of ordinal scoring and risk matrices.</p>
+    reflect the well-known critique of ordinal scoring and risk matrices. The agency-tier engine (Engine 3)
+    is derived from OWASP's 2026 agentic guidance, cited below.</p>
   <div class="refs">
+    <p>OWASP GenAI Security Project. (2026). <em>OWASP Top 10 for Agentic AI Applications.</em>
+      https://genai.owasp.org/ (source of the agency dimensions, capability vector and tier routing.)</p>
+    <p>OWASP GenAI Security Project. (2026). <em>Agent Control Standard.</em>
+      https://genai.owasp.org/ (source of the containment and safety-floor controls.)</p>
     <p>Belton, V. &amp; Stewart, T.J. (2002). <em>Multiple Criteria Decision Analysis: An Integrated
       Approach.</em> Boston: Kluwer Academic Publishers.</p>
     <p>Cox, L.A. (Tony), Jr. (2008). What&rsquo;s wrong with risk matrices? <em>Risk Analysis,</em>
