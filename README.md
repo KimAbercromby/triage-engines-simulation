@@ -20,7 +20,8 @@ needs to see.
 - **Engine 2: Risk.** A likelihood-by-impact model that takes the worst of five
   impact categories rather than the average, then discounts for control
   effectiveness to give a residual figure. The tier follows the inherent score
-  until the controls are implemented and evidenced, then the residual score, and
+  until the controls are implemented and evidenced (independently verified if the
+  inherent tier is High or Critical), then the residual score, and
   is never below any mandatory escalation trigger floor (Playbook §4.4.8).
 - **Engine 3: Agency tier (for systems that can act).** Runs only when the answer
   to "can it act?" is yes. It reads the agent as a profile across five dimensions
