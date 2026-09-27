@@ -2,7 +2,7 @@
 
 An interactive simulation showing how an AI governance triage result is produced.
 Two independent engines run side by side for every system: one calculates a
-**priority band**, the other a **residual risk tier**. A third engine, further
+**priority band**, the other a **risk tier**. A third engine, further
 down, scores the **agency tier** for systems that can act. Move any input and the
 arithmetic updates live, so you can see exactly how each number is reached and
 why blending them into a single score would throw away what a governance team
@@ -19,13 +19,15 @@ needs to see.
   internal factors only modulate it.
 - **Engine 2: Risk.** A likelihood-by-impact model that takes the worst of five
   impact categories rather than the average, then discounts for control
-  effectiveness to give a residual figure. The governance tier is the residual
-  tier, floored by any mandatory escalation trigger.
+  effectiveness to give a residual figure. The tier follows the inherent score
+  until the controls are implemented and evidenced, then the residual score, and
+  is never below any mandatory escalation trigger floor (Playbook §4.4.8).
 - **Engine 3: Agency tier (for systems that can act).** Runs only when the answer
   to "can it act?" is yes. It reads the agent as a profile across five dimensions
   (consequence, autonomy, authority, reach and controllability, the last scored
   reversed so that 5 is effectively irreversible). The base tier is
-  `max(autonomy, authority)`, and safety floors raise it, never lower it, to an
+  `max(autonomy, authority)`, and safety floors (including high-impact agency
+  multipliers) raise it, never lower it, to an
   agency tier from T0 to T5. It reproduces the Multi-Board Triage Calculator's
   agency engine exactly, so you can watch a floor lift the tier as you move the
   sliders.
