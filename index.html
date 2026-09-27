@@ -313,8 +313,13 @@
       </div>
 
       <div class="chain" id="riskChain"></div>
-      <label class="trig evid"><input type="checkbox" id="evidenced"> Controls implemented and evidenced
-        <span class="aghint">(until ticked, the tier follows the risk before controls)</span></label>
+      <label class="trig evid">Control evidence
+        <select id="evidence">
+          <option value="0">Not yet: planned or unverified</option>
+          <option value="1">Implemented and evidenced</option>
+          <option value="2">Implemented, evidenced and independently verified</option>
+        </select>
+        <span class="aghint">A High or Critical risk before controls needs independent verification before it can drop.</span></label>
 
       <div class="result" id="riskResult" aria-live="polite">
         <span class="score" id="riskScore">9.0</span>
@@ -322,9 +327,9 @@
           <span class="bandsub" id="riskBasis">inherent risk · controls not yet evidenced</span></span>
       </div>
       <div class="forced" id="riskForced" style="display:none">Critical — forced by escalation trigger</div>
-      <p class="takeaway">Risk is about <b>likelihood and severity</b>. Controls count once they are proven: tick
-        <b>implemented and evidenced</b> and a stronger control lowers the tier. Until then the tier follows the
-        risk before controls.</p>
+      <p class="takeaway">Risk is about <b>likelihood and severity</b>. Controls count once they are proven: set
+        <b>implemented and evidenced</b> and a stronger control lowers the tier (a High or Critical risk needs
+        <b>independent verification</b> first). Until then the tier follows the risk before controls.</p>
     </section>
   </div>
 
@@ -412,18 +417,18 @@
     resident:3,trust:3,legal:3,visibility:3,strategic:3,oversight:3,
     safety:3,rights:3,financial:3,operational:3,reputation:3,
     likelihood:3, control:3,
-    t1:false,t2:false,t3:false,evidenced:false
+    t1:false,t2:false,t3:false,evidence:0
   };
 
   var PRESETS = {
     reset:{resident:3,trust:3,legal:3,visibility:3,strategic:3,oversight:3,
-           safety:3,rights:3,financial:3,operational:3,reputation:3,likelihood:3,control:3,t1:false,t2:false,t3:false,evidenced:false},
+           safety:3,rights:3,financial:3,operational:3,reputation:3,likelihood:3,control:3,t1:false,t2:false,t3:false,evidence:0},
     faq:{resident:2,trust:3,legal:2,visibility:4,strategic:2,oversight:2,
-         safety:1,rights:2,financial:1,operational:2,reputation:3,likelihood:2,control:2,t1:false,t2:false,t3:false,evidenced:true},
+         safety:1,rights:2,financial:1,operational:2,reputation:3,likelihood:2,control:2,t1:false,t2:false,t3:false,evidence:1},
     benefits:{resident:5,trust:5,legal:5,visibility:4,strategic:4,oversight:3,
-              safety:3,rights:5,financial:5,operational:3,reputation:4,likelihood:4,control:3,t1:false,t2:true,t3:false,evidenced:false},
+              safety:3,rights:5,financial:5,operational:3,reputation:4,likelihood:4,control:3,t1:false,t2:true,t3:false,evidence:0},
     traffic:{resident:3,trust:2,legal:2,visibility:2,strategic:3,oversight:2,
-             safety:5,rights:1,financial:2,operational:3,reputation:2,likelihood:3,control:4,t1:false,t2:false,t3:false,evidenced:false}
+             safety:5,rights:1,financial:2,operational:3,reputation:2,likelihood:3,control:4,t1:false,t2:false,t3:false,evidence:0}
   };
 
   // ---- compute ----
@@ -584,8 +589,12 @@
 
     // Playbook §4.4.8: inherent tier until controls are implemented and evidenced,
     // then residual; never below the mandatory trigger floor (§4.4.6).
-    var tier=state.evidenced?riskTier(res):riskTier(inh);
-    var shown=state.evidenced?res:inh;
+    // High/Critical inherent tiers drop only on independently verified evidence.
+    var inhTier=riskTier(inh);
+    var needsVerify=state.evidence===1 && inhTier.rank>=3;
+    var useResidual=state.evidence===2 || (state.evidence===1 && !needsVerify);
+    var tier=useResidual?riskTier(res):inhTier;
+    var shown=useResidual?res:inh;
     // §4.4.6: any trigger floors the risk tier to at least High; statutory (t2)
     // or unreviewed agentic action (t3) floors it to Critical.
     var criticalTrig=state.t2||state.t3;
@@ -594,8 +603,8 @@
     var rForced=effTier.rank>tier.rank;
     var rRes=document.getElementById("riskResult");
     document.getElementById("riskScore").textContent=shown.toFixed(1);
-    document.getElementById("riskBasis").textContent=state.evidenced?"residual risk · controls evidenced":"inherent risk · controls not yet evidenced";
-    document.getElementById("evidenced").checked=state.evidenced;
+    document.getElementById("riskBasis").textContent=useResidual?"residual risk · controls evidenced":(needsVerify?"inherent risk · awaiting independent verification":"inherent risk · controls not yet evidenced");
+    document.getElementById("evidence").value=String(state.evidence);
     document.getElementById("riskTier").textContent=tier.name;
     document.getElementById("tierDot").style.background=tier.colour;
     var rf=document.getElementById("riskForced");
@@ -633,7 +642,7 @@
       render();
     });
   });
-  document.getElementById("evidenced").addEventListener("change",function(e){ state.evidenced=e.target.checked; render(); });
+  document.getElementById("evidence").addEventListener("change",function(e){ state.evidence=parseInt(e.target.value,10); render(); });
   document.querySelectorAll('.trig-in').forEach(function(c){
     c.addEventListener("change",function(){ state[c.id]=c.checked; render(); });
   });
@@ -781,9 +790,13 @@
   <p>A control that is only planned, designed or unverified does not lower the tier. Until the controls credited
     in the score are <strong>implemented and evidenced</strong>, the tier follows the <em>inherent</em> score;
     once they are, it follows the <em>residual</em> score. Either way, a mandatory escalation trigger can only
-    raise it (Playbook §4.4.8). This is the same principle the framework applies to agents: a documented
-    control is not an implemented control.</p>
-  <div class="formula">score for tier = controls evidenced ? residual : inherent</div>
+    raise it (Playbook §4.4.8). Where the inherent tier is High or Critical, the evidence must also be
+    <strong>independently verified</strong> before the tier can drop. This is the same principle the framework
+    applies to agents: a documented control is not an implemented control.</p>
+  <p>The tier is a <em>governance</em> tier: it sets how much scrutiny a use gets. It is not a legal
+    classification. Duties such as a UK GDPR DPIA, the Articles 22A&ndash;22D automated-decision safeguards or,
+    where relevant, an EU AI Act risk category follow the nature and use of the system, whatever its controls.</p>
+  <div class="formula">score for tier = controls evidenced (verified if inherent is High/Critical) ? residual : inherent</div>
 
   <h3>Step 4 — tier the score</h3>
   <p>As with priority, boundaries resolve to the higher tier.</p>
