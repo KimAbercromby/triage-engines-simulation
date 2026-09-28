@@ -438,7 +438,7 @@
     return s;
   }
   function agpiBand(score){
-    var v=score;  // band on the raw score (matches AGPI worksheet 06 and the calculator)
+    var v=score;  // band on the raw score (matches the AIG-ASS-01 AGPI workbook and the calculator)
     if(v>=80) return {n:1,name:"Critical"};
     if(v>=60) return {n:2,name:"High"};
     if(v>=40) return {n:3,name:"Standard"};
