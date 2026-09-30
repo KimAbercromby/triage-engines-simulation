@@ -16,7 +16,8 @@ needs to see.
   scored 1 to 5, normalised, weighted 25/20/20/15/10/10, and summed to an index on 0 to 100, then
   banded into five priority levels. The three outward-facing dimensions carry 65 of the 100 points by
   design. A Resident Impact or Legal & Regulatory Exposure score of 5 lifts the priority to at least
-  Priority 2, and a use with an escalation trigger cannot be Priority 5. The priority sets **urgency
+  Priority 2, and a use with an escalation trigger cannot be Priority 5: the trigger floor makes it at
+  least Priority 4 (AIG-ASS-01 v1.4 rows 23 and 24). The priority sets **urgency
   only**: how soon and in what order governance looks at the use. It never sets the route.
 - **Engine 2: Risk.** A likelihood-by-impact model (AIG-ASS-02) that takes the worst of five
   impact categories rather than the average, then discounts for control effectiveness to give a
@@ -32,17 +33,19 @@ needs to see.
   T3 High, T4 High or Critical without evidenced per-action review, T5 Critical; AIG-AGT-03 §6).
 - **Governing tier.** The route follows the highest of the risk tier (with its trigger and impact
   floors) and, for systems that can act, the agency minimum. The priority is not an input.
-- **Escalation triggers.** Three of the seven Playbook §4.4.6 triggers are shown. Any single one floors
-  the risk tier (High, or Critical for statutory decisions or action without evidenced per-action
-  review) and requires comprehensive assurance.
+- **Escalation triggers.** All seven Playbook §4.4.6 triggers can be set (special category data,
+  vulnerable residents, housing, care or homelessness decisions, novel deployment, statutory decisions,
+  significant supplier, model, data or scope change, and action without evidenced per-action review).
+  Any single one floors the risk tier (High, or Critical for statutory decisions or action without
+  evidenced per-action review) and requires comprehensive assurance.
 - **Full methodology.** A companion write-up explaining the maths, the
   sum-versus-maximum aggregation choice, the profile-not-sum logic of the agency
   engine, why the axes are kept separate, the honest limits of the method, and
   the references behind it.
 
-The scoring logic follows the AI Governance suite v3.9.1 sources: AIG-ASS-01 v1.3,
-AIG-ASS-02 v1.9, AIG-AGT-02 v1.4, AIG-AGT-03 v1.3, AIG-DEC-01 v1.7 and Playbook
-AIG-GOV-02 v19.9.11. Rules marked Proposed in the suite are for Council confirmation.
+The scoring logic follows the AI Governance suite v3.9.2 sources: AIG-ASS-01 v1.4,
+AIG-ASS-02 v1.10, AIG-AGT-02 v1.4, AIG-AGT-03 v1.3, AIG-DEC-01 v1.8 and Playbook
+AIG-GOV-02 v19.9.12. Rules marked Proposed in the suite are for Council confirmation.
 This tool is the explainer that sits alongside the Triage Calculator.
 
 ## The tool suite
@@ -69,9 +72,12 @@ Download `index.html` and open it in any web browser. Nothing else needed.
 
 ## Tests
 
-`node --test` checks the engine logic in `index.html` against fixtures generated from the v3.9.1
+`node --test` checks the engine logic in `index.html` against fixtures generated from the v3.9.2
 workbooks and documents (`python3 scripts/generate-fixtures.py <sources folder>`): all 15,625 AGPI
-score combinations, a 1,500-case risk grid, the agency tier-assignment table over all 7,776 profiles,
+score combinations with and without a §4.4.6 trigger (AIG-ASS-01 v1.4 trigger floor), a 3,000-case
+risk grid covering all seven triggers, the agency tier-assignment table over all 7,776 profiles,
 and the AIG-AGT-02 calibration examples. `test/fixtures/libreoffice-checked.json` holds sample cases
-recalculated in the real workbooks with LibreOffice, including a 504-case agentic grid that
-checks the governing tier against AIG-ASS-02 v1.9 (C43, and the C82 agentic floor: T2 Medium).
+recalculated in the real workbooks with LibreOffice: AIG-ASS-01 v1.4 score sets with the row 23
+trigger answer No, Yes and Unsure, and a 504-case agentic grid that checks the governing tier against
+AIG-ASS-02 v1.10 (C43, and the C82 agentic floor read by exact tier token), plus the T4 case with the
+AIG-DEC-01 controlled pathway wording.
