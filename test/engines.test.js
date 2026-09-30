@@ -1,7 +1,7 @@
 // Run: node --test test/
 // Checks the engine logic in index.html against fixtures generated from the AI Governance
-// suite v3.9.1 workbooks and documents (scripts/generate-fixtures.py; sources and cells are
-// named inside test/fixtures/suite-v3.9.1.json).
+// suite v3.9.2 workbooks and documents (scripts/generate-fixtures.py; sources and cells are
+// named inside test/fixtures/suite-v3.9.2.json).
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
@@ -10,7 +10,7 @@ const vm = require("node:vm");
 
 const root = path.join(__dirname, "..");
 const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
-const fx = JSON.parse(fs.readFileSync(path.join(__dirname, "fixtures", "suite-v3.9.1.json"), "utf8"));
+const fx = JSON.parse(fs.readFileSync(path.join(__dirname, "fixtures", "suite-v3.9.2.json"), "utf8"));
 const lo = JSON.parse(fs.readFileSync(path.join(__dirname, "fixtures", "libreoffice-checked.json"), "utf8"));
 
 function loadEngines() {
@@ -58,15 +58,34 @@ test("AGPI score and priority (with v3.8 floor) match AIG-ASS-01 B17 for all 15,
   assert.equal(mism, 0);
 });
 
-test("AGPI agrees with the LibreOffice-recalculated AIG-ASS-01 sample", () => {
-  assert.ok(lo.ass01.length >= 20);
+test("W-05: AGPI with a §4.4.6 trigger matches AIG-ASS-01 v1.4 B17 (trigger floor) for all 15,625 combinations", () => {
+  assert.equal(fx.ass01.trigger_input.label, "Mandatory escalation trigger applies (Playbook §4.4.6)? (Yes / No / Unsure)");
+  assert.deepEqual(fx.ass01.trigger_input.list, ["Yes", "No", "Unsure"]);
+  let i = 0, mism = 0, raised = 0;
+  const combos = [1, 2, 3, 4, 5];
+  for (const a of combos) for (const b of combos) for (const c of combos)
+    for (const d of combos) for (const e of combos) for (const f of combos) {
+      const s = { resident: a, trust: b, legal: c, visibility: d, strategic: e, oversight: f };
+      const p = E.priority(s, true);
+      if (String(p.n) !== fx.ass01.priority_with_trigger[i]) mism++;
+      if (fx.ass01.priority[i] === "5") raised++;
+      i++;
+    }
+  assert.equal(i, 15625);
+  assert.equal(mism, 0);
+  assert.ok(raised > 0, "the trigger floor is exercised");
+});
+
+test("AGPI agrees with the LibreOffice-recalculated AIG-ASS-01 v1.4 sample (row 23 trigger No / Yes / Unsure)", () => {
+  assert.ok(lo.ass01.length >= 60);
   for (const r of lo.ass01) {
     const s = Object.fromEntries(KEYS.map((k, j) => [k, r.scores[j]]));
-    const p = E.priority(s, false);
+    const p = E.priority(s, r.B23 !== "No");
     assert.ok(Math.abs(p.score - r.D16) < 1e-9, `score ${r.scores}`);
-    assert.equal(p.label, r.B17, `priority ${r.scores}`);
+    assert.equal(p.label, r.B17, `priority ${r.scores} ${r.B23}`);
     assert.equal(p.reasons.includes("floor"), r.B21.startsWith("Priority floor applied"), `floor flag ${r.scores}`);
   }
+  assert.ok(lo.ass01.some((r) => (r.B24 || "").startsWith("Trigger floor applied")));
 });
 
 test("priority floor: Resident or Legal = 5 lifts to Priority 2; score unchanged", () => {
@@ -78,7 +97,7 @@ test("priority floor: Resident or Legal = 5 lifts to Priority 2; score unchanged
   assert.deepEqual(plain(p.reasons), ["floor"]);
 });
 
-test("override rule: a use with a §4.4.6 trigger cannot be Priority 5", () => {
+test("trigger floor: a use with a §4.4.6 trigger cannot be Priority 5", () => {
   const s = { resident: 1, trust: 1, legal: 1, visibility: 1, strategic: 1, oversight: 1 };
   assert.equal(E.priority(s, false).n, 5);
   const p = E.priority(s, true);
@@ -93,7 +112,7 @@ test("impact labels and order equal AIG-ASS-02 A23:A27", () => {
   assert.deepEqual(plain(E.IMPACTS.map((m) => m.name)), fx.ass02.impact_dimensions);
 });
 
-test("risk tiers match AIG-ASS-02 C38, C41 and C43 over the full grid (1,500 cases)", () => {
+test("T-11: risk tiers match AIG-ASS-02 C38, C41, C42 and C43 over the full grid with all seven triggers (3,000 cases)", () => {
   let mism = 0;
   for (const [I, L, C, ev, trig, inhT, resT, eff] of fx.ass02.cases) {
     const impacts = Object.fromEntries(IMP.map((k, j) => [k, j === 2 ? I : 1]));
@@ -101,7 +120,8 @@ test("risk tiers match AIG-ASS-02 C38, C41 and C43 over the full grid (1,500 cas
     const r = E.risk({ impacts, likelihood: L, control: C, evidence: ev, triggers });
     if (r.inherentTier !== inhT || r.residualTier !== resT || r.effectiveTier !== eff) mism++;
   }
-  assert.equal(fx.ass02.cases.length, 1500);
+  assert.equal(fx.ass02.cases.length, 3000);
+  assert.equal(fx.ass02.triggers.length, 7);
   assert.equal(mism, 0);
 });
 
@@ -110,8 +130,8 @@ test("risk agrees with the LibreOffice-recalculated AIG-ASS-02 sample", () => {
   for (const r of lo.ass02) {
     const impacts = Object.fromEntries(IMP.map((k, j) => [k, r.impacts[j]]));
     const t = r.triggers_C50_C56;
-    const triggers = { special: t[0] === "Yes", vulnerable: t[1] === "Yes", housing: t[2] === "Yes", novel: t[3] === "Yes",
-      statutory: t[4] === "Yes", supplierChange: t[5] === "Yes", agenticNoReview: t[6] === "Yes" || t[6] === "Unsure" };
+    const triggers = { special: t[0] === "Yes", vulnerable: t[1] === "Yes", housingCare: t[2] === "Yes", novel: t[3] === "Yes",
+      statutory: t[4] === "Yes", materialChange: t[5] === "Yes", agenticNoReview: t[6] === "Yes" || t[6] === "Unsure" };
     const evidence = !r.evidenced ? 0 : r.independent ? 2 : 1;
     const x = E.risk({ impacts, likelihood: r.L, control: r.C, evidence, triggers });
     assert.equal(x.inherent, r.C37);
@@ -215,14 +235,14 @@ test("agency minimum pathway equals AIG-AGT-03 §6 (T0/T1 none, T2 Medium, T3 Hi
   for (let t = 0; t <= 5; t++) assert.equal(E.AGENTIC_REQUIREMENT[t], fx.agt03.agentic_requirement["T" + t]);
 });
 
-test("v3.9.1: agency minimum equals the AIG-ASS-02 v1.9 C82 agentic floor for every tier, T2 included (no carve-outs)", () => {
+test("W-09: agency minimum equals the AIG-ASS-02 v1.10 C82 agentic floor read by exact tier token, for every tier", () => {
   const lab = (r) => (r === 0 ? "None" : E.TIERS[r - 1]);
   const c82 = fx.ass02.agentic_floor_c82;
   for (let t = 0; t <= 5; t++) assert.equal(lab(E.agencyMinimum(t, false)), c82["T" + t], "T" + t);
   assert.equal(c82.T2, "Medium");
 });
 
-test("v3.9.1: governing tier equals AIG-ASS-02 v1.9 C43 on the LibreOffice agentic grid (every tier, review Yes/No/Unsure, impact and trigger floors)", () => {
+test("W-09: governing tier equals AIG-ASS-02 v1.10 C43 on the LibreOffice agentic grid (every tier, review Yes/No/Unsure, impact and trigger floors)", () => {
   const cols = lo.ass02_agentic.columns;
   let n = 0, conflicts = 0;
   for (const row of lo.ass02_agentic.cases) {
@@ -242,6 +262,40 @@ test("v3.9.1: governing tier equals AIG-ASS-02 v1.9 C43 on the LibreOffice agent
   }
   assert.equal(n + conflicts, 504);
   assert.equal(conflicts, 24);
+});
+
+test("W-09: the controlled T4 pathway wording no longer reads as Critical in AIG-ASS-02 v1.10 (S19)", () => {
+  const w = lo.ass02_w09;
+  assert.match(w["T4 wording used"], /^High \(Critical where actions run without evidenced per-action human review/);
+  const reviewed = w["S19 T4, per-action review evidenced, DEC-01 controlled wording [new]"];
+  assert.equal(reviewed.C82, "High");
+  assert.equal(reviewed.C43, "High");
+  const low = { effectiveTier: "Low" };
+  assert.equal(E.governing(low, "Yes", 4, false).tier, reviewed.C43, "T4 with evidenced per-action review");
+  const unreviewed = w["S19 T4, DEC-01 wording, NO per-action review (B40=Yes) [new]"];
+  assert.equal(unreviewed.C43, "Critical");
+  assert.equal(E.governing(low, "Yes", 4, true).tier, unreviewed.C43, "T4 without per-action review (C56 floor)");
+});
+
+test("T-11: all seven §4.4.6 triggers can be set; S07 (novel) gives High and Priority 4, S08 (vulnerable + housing) floors High", () => {
+  const ids = [...html.matchAll(/class="trig-in" id="(t\d)"/g)].map((m) => m[1]);
+  assert.deepEqual(ids.sort(), ["t1", "t2", "t3", "t4", "t5", "t6", "t7"]);
+  assert.match(html, /var TRIGGER_KEYS = \{t1:"special", t4:"vulnerable", t5:"housingCare", t6:"novel", t2:"statutory", t7:"materialChange", t3:"agenticNoReview"\}/);
+  const low = { resident: 1, legal: 1, reputational: 1, operational: 1, financial: 1 };
+  for (const [key, floor] of [["special", "High"], ["vulnerable", "High"], ["housingCare", "High"], ["novel", "High"],
+    ["statutory", "Critical"], ["materialChange", "High"], ["agenticNoReview", "Critical"]]) {
+    const r = E.risk({ impacts: low, likelihood: 1, control: 1, evidence: 2, triggers: { [key]: true } });
+    assert.equal(r.triggerFloor, floor, key);
+    assert.equal(r.effectiveTier, floor, key);
+  }
+  // S07: pothole detection pilot, novel deployment, AGPI 2/2/2/2/3/2 (Priority 5 band), L3 I3 C3 not evidenced.
+  const s07 = E.risk({ impacts: { resident: 2, legal: 2, reputational: 3, operational: 3, financial: 2 }, likelihood: 3, control: 3, evidence: 0, triggers: { novel: true } });
+  assert.equal(s07.effectiveTier, "High");
+  const p07 = E.priority({ resident: 2, trust: 2, legal: 2, visibility: 1, strategic: 2, oversight: 1 }, true);
+  assert.equal(p07.band.n, 5);
+  assert.equal(p07.n, 4);
+  const s08 = E.risk({ impacts: low, likelihood: 1, control: 1, evidence: 2, triggers: { vulnerable: true, housingCare: true } });
+  assert.equal(s08.effectiveTier, "High");
 });
 
 // ---------- Governing tier and priority/route separation ----------
@@ -278,9 +332,10 @@ test("no 'higher of priority route and risk-tier route' wording and no stale Pla
   assert.doesNotMatch(html, /approval by the relevant forum under delegated authority/);
 });
 
-test("suite version line names v3.9.1 and the GOV-03 artefact versions", () => {
+test("suite version line names v3.9.2 and the GOV-03 artefact versions", () => {
   assert.doesNotMatch(html, /suite v3\.9(?![.\d])/);
-  for (const v of ["suite v3.9.1", "AIG-GOV-02 v19.9.11", "AIG-ASS-01 v1.3", "AIG-ASS-02 v1.9", "AIG-AGT-02 v1.4", "AIG-AGT-03 v1.3", "AIG-DEC-01 v1.7"]) {
+  assert.doesNotMatch(html, /v3\.9\.1/);
+  for (const v of ["suite v3.9.2", "AIG-GOV-02 v19.9.12", "AIG-ASS-01 v1.4", "AIG-ASS-02 v1.10", "AIG-AGT-02 v1.4", "AIG-AGT-03 v1.3", "AIG-DEC-01 v1.8"]) {
     assert.ok(html.replace(/\s+/g, " ").includes(v.replace(/\s+/g, " ")), v);
   }
 });
