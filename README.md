@@ -40,9 +40,9 @@ needs to see.
   engine, why the axes are kept separate, the honest limits of the method, and
   the references behind it.
 
-The scoring logic follows the AI Governance suite v3.9 sources: AIG-ASS-01 v1.3,
-AIG-ASS-02 v1.8, AIG-AGT-02 v1.3, AIG-AGT-03 v1.2, AIG-DEC-01 v1.6 and Playbook
-AIG-GOV-02 v19.9.10. Rules marked Proposed in the suite are for Council confirmation.
+The scoring logic follows the AI Governance suite v3.9.1 sources: AIG-ASS-01 v1.3,
+AIG-ASS-02 v1.9, AIG-AGT-02 v1.4, AIG-AGT-03 v1.3, AIG-DEC-01 v1.7 and Playbook
+AIG-GOV-02 v19.9.11. Rules marked Proposed in the suite are for Council confirmation.
 This tool is the explainer that sits alongside the Triage Calculator.
 
 ## The tool suite
@@ -69,8 +69,9 @@ Download `index.html` and open it in any web browser. Nothing else needed.
 
 ## Tests
 
-`node --test` checks the engine logic in `index.html` against fixtures generated from the v3.9
+`node --test` checks the engine logic in `index.html` against fixtures generated from the v3.9.1
 workbooks and documents (`python3 scripts/generate-fixtures.py <sources folder>`): all 15,625 AGPI
 score combinations, a 1,500-case risk grid, the agency tier-assignment table over all 7,776 profiles,
 and the AIG-AGT-02 calibration examples. `test/fixtures/libreoffice-checked.json` holds sample cases
-recalculated in the real workbooks with LibreOffice.
+recalculated in the real workbooks with LibreOffice, including a 504-case agentic grid that
+checks the governing tier against AIG-ASS-02 v1.9 (C43, and the C82 agentic floor: T2 Medium).

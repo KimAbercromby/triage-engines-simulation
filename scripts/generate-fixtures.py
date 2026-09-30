@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Generate test/fixtures/suite-v3.9.json from the AI Governance suite v3.9 sources.
+"""Generate test/fixtures/suite-v3.9.1.json from the AI Governance suite v3.9.1 sources.
 
-Usage:  python3 scripts/generate-fixtures.py <folder holding the v3.9 .xlsx/.docx sources>
+Usage:  python3 scripts/generate-fixtures.py <folder holding the v3.9.1 .xlsx/.docx sources>
 
 Reads (read-only):
   AIG-ASS-01_AGPI_Triage_Tool_Proposed.xlsx          sheet "AGPI Triage" A10:B15 (dimensions, weights), B17 thresholds
-  AIG-ASS-02_AI_Risk_Assessment_Worksheet_Proposed.xlsx sheet "Risk Assessment" A23:A27 (impact dimensions), C37:C43
+  AIG-ASS-02_AI_Risk_Assessment_Worksheet_Proposed.xlsx sheet "Risk Assessment" A23:A27 (impact dimensions), C37:C43, C82 (agentic floor)
   AIG-AGT-02_Agentic_Classification_Reference.docx   Table A (per-dimension floors), Table B (rules), Table C (examples)
   AIG-AGT-03_Agentic_Triage_Function_Spec.docx       §6 agency tier -> minimum risk-tier pathway table
 
@@ -13,7 +13,9 @@ The expected grids are computed with a direct transcription of the workbook form
 (ASS-01 D10:D16 and B17; ASS-02 C28, C37-C43 and E41). The transcription was checked
 against LibreOffice recalculation of the real v3.9 workbooks on 54 sampled cases
 (boundary scores, priority-floor cases, all evidence states, trigger and impact floors)
-with 0 mismatches; those cases are stored in test/fixtures/libreoffice-checked.json.
+with 0 mismatches, and re-run on the v3.9.1 workbooks (AIG-ASS-02 v1.9) with the same results;
+those cases, plus a 504-case AIG-ASS-02 v1.9 agentic grid (C43, C82), are stored in
+test/fixtures/libreoffice-checked.json.
 """
 import itertools, json, os, re, sys
 
@@ -21,7 +23,7 @@ import docx
 import openpyxl
 
 SRC = sys.argv[1] if len(sys.argv) > 1 else "."
-OUT = os.path.join(os.path.dirname(__file__), "..", "test", "fixtures", "suite-v3.9.json")
+OUT = os.path.join(os.path.dirname(__file__), "..", "test", "fixtures", "suite-v3.9.1.json")
 TIERS = ["Low", "Medium", "High", "Critical"]
 F01 = "AIG-ASS-01_AGPI_Triage_Tool_Proposed.xlsx"
 F02 = "AIG-ASS-02_AI_Risk_Assessment_Worksheet_Proposed.xlsx"
@@ -79,7 +81,16 @@ def ass02():
                                                ("none", "special", "statutory", "agenticNoReview")):
         inh_t, res_t, eff = ass02_tier(I, L, C, ev, trig)
         cases.append([I, L, C, ev, trig, inh_t, res_t, eff])
-    return {"source": f"{F02} ({version}), sheet 'Risk Assessment', A23:A27, C28, C37:C43, E41",
+    # C82 agentic floor (v1.9): agency tier label (C73) -> minimum tier ranked into C43; T4 is raised to
+    # Critical by the C56 trigger floor (C42) where actions run without evidenced per-action review.
+    c82 = ws["C82"].value
+    branches = {"Critical": 'LEFT(C73,2)="T5"),"Critical"', "High": 'OR(LEFT(C73,2)="T4",LEFT(C73,2)="T3"',
+                "Medium": 'OR(LEFT(C73,2)="T2"'}
+    for k, b in branches.items(): assert b in c82, ("C82 changed", k)
+    assert 'IF(C82="Critical",4,IF(C82="High",3,IF(C82="Medium",2,1)))' in c43, "C43 agentic term changed"
+    agentic_floor = {"T0": "None", "T1": "None", "T2": "Medium", "T3": "High", "T4": "High", "T5": "Critical"}
+    return {"source": f"{F02} ({version}), sheet 'Risk Assessment', A23:A27, C28, C37:C43, E41, C82",
+            "agentic_floor_c82": agentic_floor,
             "impact_dimensions": dims,
             "evidence_codes": {"0": "E37 No", "1": "E37 Yes + ref, E39 No (no independent check)",
                                "2": "E37 Yes + ref, E39 Yes + ref (independently verified)"},
@@ -123,7 +134,7 @@ def agt03():
 
 
 if __name__ == "__main__":
-    out = {"suite": "v3.9 (30 September 2026)", "ass01": ass01(), "ass02": ass02(), "agt02": agt02(), "agt03": agt03()}
+    out = {"suite": "v3.9.1 (30 September 2026)", "ass01": ass01(), "ass02": ass02(), "agt02": agt02(), "agt03": agt03()}
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w") as f:
         json.dump(out, f, ensure_ascii=False, separators=(",", ":"))
