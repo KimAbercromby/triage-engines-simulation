@@ -10,7 +10,7 @@
     --gold:#C8AB36; --gold2:#d8c56f; --gold-ink:#7A6318;
     --cream:#F2F0E6; --paper:#FBFAF6;
     --grey:#7f8b9c; --grey2:#b7bcc6; --ink:#3d4a5c;
-    --line:#d9dde4;
+    --line:#d9dde4; --muted:#6b7686;
     --low:#5a8f6b; --med:#C8AB36; --high:#d08a3e; --crit:#b4472f;
     --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
     --sans:"Helvetica Neue",Arial,system-ui,sans-serif;
@@ -290,16 +290,19 @@
         <span class="band">Priority <span id="agpiBandNum">3</span>
           <span class="bandsub" id="agpiBandName">Moderate</span></span>
       </div>
-      <div class="forced" id="agpiForced" style="display:none">Priority 1 — forced by escalation trigger</div>
-      <p class="takeaway">Priority is about <b>stakes and salience</b>. Drag the control on the right — this number
-        will not move. It is roughly control-independent.</p>
+      <div class="forced" id="agpiForced" style="display:none">Priority 2 – High — priority floor applied: Resident/Legal = 5</div>
+      <p class="takeaway">Priority is about <b>stakes and salience</b>, and it sets <b>urgency only</b>: how soon and in
+        what order governance looks at the use. It does not set the route. Drag the control on the right — this number
+        will not move. It is roughly control-independent. A Resident Impact or Legal &amp; Regulatory Exposure score of 5
+        lifts the priority to at least Priority 2 (Proposed — for Council confirmation), and a use with an escalation
+        trigger cannot be Priority 5; the AGPI score itself does not change.</p>
     </section>
 
     <!-- ===== RISK ===== -->
     <section class="panel risk" id="riskPanel">
       <h2>Engine 2 — Risk</h2>
       <div class="title">Risk tier</div>
-      <p class="method">inherent = likelihood × max(impact)&nbsp;&nbsp;·&nbsp;&nbsp;residual = inherent × (control ÷ 5)<br>tier = inherent until controls are evidenced, then residual</p>
+      <p class="method">inherent = likelihood × max(impact)&nbsp;&nbsp;·&nbsp;&nbsp;residual = inherent × (control ÷ 5)<br>tier = inherent until controls are evidenced, then residual<br>never below a trigger floor or the impact floor (any impact 5 → at least Medium)</p>
 
       <div id="riskRows"></div>
 
@@ -326,7 +329,8 @@
         <span class="band"><span class="tierdot" id="tierDot"></span><span id="riskTier">Medium</span>
           <span class="bandsub" id="riskBasis">inherent risk · controls not yet evidenced</span></span>
       </div>
-      <div class="forced" id="riskForced" style="display:none">Critical — forced by escalation trigger</div>
+      <div class="forced" id="riskForced" style="display:none">Critical — floored by escalation trigger</div>
+      <div class="forced" id="impactFloorNote" style="display:none">Impact floor met (a Severe impact of 5 sets at least Medium); the tier is already at or above it</div>
       <p class="takeaway">Risk is about <b>likelihood and severity</b>. Controls count once they are proven: set
         <b>implemented and evidenced</b> and a stronger control lowers the tier (a High or Critical risk needs
         <b>independent verification</b> first). Until then the tier follows the risk before controls.</p>
@@ -336,13 +340,13 @@
   <!-- ===== escalation ===== -->
   <div class="escalation">
     <h3>Escalation triggers — the safety net</h3>
-    <p>Three of the seven triggers shown. Any single one floors the risk tier — to High, or to Critical for statutory decisions or unreviewed agentic action — and mandates comprehensive assurance and governance approval by the relevant forum under delegated authority, regardless of the scores above. Triggers uplift the risk pathway, not the priority score.</p>
+    <p>Three of the seven Playbook §4.4.6 triggers shown. Any single one floors the risk tier — to High, or to Critical for statutory decisions or action without evidenced per-action human review — and requires comprehensive assurance and a decision by the officer or forum with confirmed delegation, regardless of the scores above. Triggers raise the risk tier, which sets the route; they do not change the AGPI score, though a use with a trigger cannot be Priority 5.</p>
     <div class="trigs">
       <label class="trig"><input type="checkbox" class="trig-in" id="t1">Special-category data</label>
       <label class="trig"><input type="checkbox" class="trig-in" id="t2">Statutory decisions</label>
-      <label class="trig"><input type="checkbox" class="trig-in" id="t3">Agentic action, no per-action review</label>
+      <label class="trig"><input type="checkbox" class="trig-in" id="t3">Acts without evidenced per-action review (Unsure counts as no review)</label>
     </div>
-    <div class="banner" id="banner">Escalation trigger met — risk tier floored to <b id="bannerTier">High</b>; comprehensive assurance and governance approval by the relevant forum under delegated authority required.</div>
+    <div class="banner" id="banner">Escalation trigger met — risk tier floored to <b id="bannerTier">High</b>; comprehensive assurance and a decision by the officer or forum with confirmed delegation required.</div>
   </div>
 
   <!-- ===== divergence teaching note ===== -->
@@ -366,104 +370,279 @@
     #agencyResult .score{font-size:2.2em;font-weight:800;color:#e6b8b8}
     #agtierName{font-weight:700;color:#fff}
     #agencyBase{color:var(--muted);font-size:14px;margin-top:6px}
+    #agencyPanel select{font:inherit;font-size:14px;padding:6px 8px;border:1.5px solid var(--line);border-radius:8px;background:#fff;color:var(--navy);max-width:100%}
+    #agencyPanel .flaggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:6px 14px;font-size:13.5px;color:var(--navy)}
+    #agencyPanel .flaggrid label{display:flex;align-items:center;gap:8px;cursor:pointer}
+    #agencyPanel .flaggrid input{width:16px;height:16px;accent-color:#9B1C1C}
+    #agencyPanel .govbox{margin-top:16px;padding:14px 16px;border:2px solid var(--navy);border-radius:12px;background:var(--cream)}
+    #agencyPanel .govlab{margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-ink)}
+    #agencyPanel .govline{margin:0;font-size:17px;color:var(--navy)}
+    #agencyPanel .govline span#govWhy{font-size:13px;color:var(--ink)}
+    #agencyPanel .govnote{margin:8px 0 0;font-size:13px;color:var(--ink)}
+    #agencyPanel .conflict{color:#8a2a2a;font-weight:600}
   </style>
   <section class="panel" id="agencyPanel">
     <h2>Engine 3 — Agency tier</h2>
     <div class="title">For systems that can act (agents)</div>
-    <p class="method">base tier = max( autonomy, authority )&nbsp;&nbsp;→&nbsp;&nbsp;floors raise it, never lower&nbsp;&nbsp;→&nbsp;&nbsp;T0–T5</p>
-    <p class="aghint">The first two engines score every AI system. This third engine runs only when the answer to <b>can it act?</b> is yes. It reads the agent as a <b>profile across five dimensions</b>, not a single sum: the base comes from how much it can do unaided, and any high-consequence or hard-to-contain reading floors the tier upward.</p>
+    <p class="method">each score and flag sets a floor (AIG-AGT-02 Tables A and B)&nbsp;&nbsp;→&nbsp;&nbsp;highest floor wins&nbsp;&nbsp;→&nbsp;&nbsp;T0–T5&nbsp;&nbsp;→&nbsp;&nbsp;minimum pathway</p>
+    <p class="aghint">The first two engines score every AI system. This third engine runs only when the answer to <b>can it act?</b> is yes (Unsure is treated as yes until confirmed). It reads the agent as a <b>profile across five dimensions</b>, not a single sum: every score and every multiplier flag sets a floor, and the highest floor is the agency tier. The tier then sets a <b>minimum pathway</b> on the risk-tier scale.</p>
+    <label class="agrow" style="grid-template-columns:auto 1fr">
+      <span class="name">Can it act?</span>
+      <select id="ag_canact">
+        <option value="Yes">Yes</option>
+        <option value="Unsure">Unsure (treated as Yes)</option>
+        <option value="No">No: cannot act</option>
+      </select>
+    </label>
+    <div id="agencyBody">
     <div id="agencyRows"></div>
-    <label class="agrow" style="grid-template-columns:auto 1fr"><input type="checkbox" id="ag_mult">
-      <span class="name">High-impact agency multiplier present <span class="aghint">delegation, tool discovery, credential access, self-modification or replication</span></span></label>
+    <p class="aghint" style="margin:14px 0 4px"><b>Multiplier flags</b> (AIG-AGT-02 §4; an unknown flag is treated as present)</p>
+    <div class="flaggrid" id="agencyFlags"></div>
+    </div>
     <div class="floors" id="agencyFloors"></div>
     <div class="result" id="agencyResult" aria-live="polite">
-      <span class="score" id="agtier">T1</span>
-      <span class="band"><span id="agtierName">Assisted</span><span class="bandsub" id="agtierRoute"></span></span>
+      <span class="score" id="agtier">T2</span>
+      <span class="band"><span id="agtierName">bounded agent</span><span class="bandsub" id="agtierRoute"></span></span>
     </div>
     <div id="agencyBase"></div>
-    <p class="takeaway">Agency is about <b>what it can do and how well you can stop it</b>. Raise autonomy or authority and the base climbs; drop controllability or raise consequence and a floor lifts the tier regardless of the base. The profile, not an average, decides.</p>
+    <div class="govbox" id="governingBox" aria-live="polite">
+      <p class="govlab">Governing tier (sets the route)</p>
+      <p class="govline"><span class="tierdot" id="govDot"></span><b id="govTier">Medium</b> <span id="govWhy"></span></p>
+      <p class="govnote" id="govGates"></p>
+    </div>
+    <p class="takeaway">Agency is about <b>what it can do and how well you can stop it</b>. A single high reading, or a risky flag, lifts the tier on its own; no average can pull it back down. The governing tier is the highest of the risk tier (with its trigger and impact floors) and the agency minimum; the AGPI priority never enters it.</p>
   </section>
 
   <footer>
     Runs entirely in the browser. Stores no data. Single self-contained file, no dependencies. Decision support only.
-    Impact category labels are illustrative; scoring logic mirrors the Multi-Board Triage Calculator.
+    Dimension and impact labels follow AIG-ASS-01 and AIG-ASS-02; scoring logic follows the AI Governance suite
+    v3.9 workbooks (AIG-ASS-01 v1.3, AIG-ASS-02 v1.8) and the agency tier-assignment table (AIG-AGT-02 v1.3).
     Full derivation: <button type="button" class="doclink mdlg-open">methodology &amp; statistical basis</button>.
   </footer>
 </div>
 
+<script id="engine-logic">
+/* ===== Engine logic (pure functions; no DOM) =====
+   Aligned to AI Governance suite v3.9 (30 September 2026):
+   - AGPI: AIG-ASS-01 v1.3 (sheet "AGPI Triage": B10:B15 weights, D10:D16, B17) and Playbook §3.9.6
+   - Risk: AIG-ASS-02 v1.8 (sheet "Risk Assessment": C28, C37:C43, E41) and Playbook §4.4.3, §4.4.4, §4.4.6, §4.4.8
+   - Agency: AIG-AGT-02 v1.3 Tables A and B (reproduced in AIG-AGT-03 v1.2 §6)
+   - Governing tier and agency minimum pathway: AIG-AGT-03 §6, AIG-DEC-01 v1.6 (Agentic pathway), Playbook F.2
+   The rules marked "Proposed" in the suite are Proposed — for Council confirmation. */
+var TriageEngines = (function(){
+  "use strict";
+  var TIERS = ["Low","Medium","High","Critical"];           // rank 1..4
+  var PRIORITIES = [null,"Critical","High","Standard","Routine","Observe"]; // Priority 1..5
+
+  // ---- Engine 1: AGPI (AIG-ASS-01 rows 10-15, weights 25/20/20/15/10/10) ----
+  var AGPI_DIMS = [
+    {key:"resident",   name:"Resident Impact",                              weight:25},
+    {key:"trust",      name:"Public Trust & Reputation",                    weight:20},
+    {key:"legal",      name:"Legal & Regulatory Exposure",                  weight:20},
+    {key:"visibility", name:"Governance Visibility & Accountability",       weight:15},
+    {key:"strategic",  name:"Strategic Value & Organisational Dependency",  weight:10},
+    {key:"oversight",  name:"Human Oversight & Decision Authority",         weight:10}
+  ];
+  function agpiScore(s){
+    // D10:D15 = (score-1)/4 * weight; D16 = SUM. No rounding in the workbook.
+    var t=0; AGPI_DIMS.forEach(function(d){ t += ((s[d.key]-1)/4)*d.weight; }); return t;
+  }
+  function agpiBand(score){
+    // AIG-ASS-01 B17 / Playbook §3.9.6: >=80 P1, >=60 P2, >=40 P3, >=20 P4, else P5 (raw score, no rounding)
+    var n = score>=80?1 : score>=60?2 : score>=40?3 : score>=20?4 : 5;
+    return {n:n, name:PRIORITIES[n], label:"Priority "+n+" – "+PRIORITIES[n]};
+  }
+  function priority(s, anyTrigger){
+    var score=agpiScore(s), band=agpiBand(score), n=band.n, reasons=[];
+    // v3.8 priority floor (AIG-ASS-01 B17/B21): Resident Impact = 5 or Legal & Regulatory Exposure = 5 -> at least Priority 2
+    if((s.resident===5 || s.legal===5) && n>2){ n=2; reasons.push("floor"); }
+    // Playbook §3.9.6 override rule: a use meeting a §4.4.6 trigger cannot be Priority 5
+    if(anyTrigger && n===5){ n=4; reasons.push("trigger"); }
+    return {score:score, band:band, n:n, name:PRIORITIES[n], label:"Priority "+n+" – "+PRIORITIES[n],
+            raised:n<band.n, reasons:reasons};
+  }
+
+  // ---- Engine 2: risk (AIG-ASS-02 v1.8) ----
+  // Impact dimensions in AIG-ASS-02 order (rows 23-27).
+  var IMPACTS = [
+    {key:"resident",    name:"Resident Impact"},
+    {key:"legal",       name:"Legal & Regulatory Impact"},
+    {key:"reputational",name:"Reputational Impact"},
+    {key:"operational", name:"Operational Impact"},
+    {key:"financial",   name:"Financial Impact"}
+  ];
+  function tierByRank(r){ return TIERS[Math.max(1,Math.min(4,r))-1]; }
+  function rankOf(name){ return TIERS.indexOf(name)+1; }
+  function inherentTier(v){ // C38: >=16 Critical, >=11 High, >=6 Medium, else Low
+    return v>=16?"Critical" : v>=11?"High" : v>=6?"Medium" : "Low";
+  }
+  function residualTier(v){ // C41: >15 Critical, >10 High, >5 Medium, else Low
+    // (Playbook §4.4.3: a non-integer residual is rounded up before banding; same result)
+    var x=Math.round(v*1e9)/1e9;
+    return x>15?"Critical" : x>10?"High" : x>5?"Medium" : "Low";
+  }
+  /* r = {impacts:{resident,legal,reputational,operational,financial}, likelihood, control,
+          evidence: 0 not evidenced | 1 implemented and evidenced | 2 evidenced and independently verified,
+          triggers:{special, statutory, agenticNoReview, ...other §4.4.6 triggers as booleans}} */
+  function risk(r){
+    var I=Math.max.apply(null, IMPACTS.map(function(m){return r.impacts[m.key];}));
+    var inh=r.likelihood*I;                          // C37 = L x I
+    var res=inh*(r.control/5);                       // C40 = C37 * (C33/5)
+    var inhT=inherentTier(inh), resT=residualTier(res);
+    // E41: reduced tier eligible when controls are evidenced, and independently verified if inherent is High/Critical
+    var needsVerify = r.evidence===1 && rankOf(inhT)>=3;
+    var useResidual = r.evidence===2 || (r.evidence===1 && !needsVerify);
+    var basisT = useResidual ? resT : inhT;
+    // C42: statutory or agentic (no per-action review; Unsure = No review) -> Critical; any other trigger -> High
+    var t=r.triggers||{}, any=Object.keys(t).some(function(k){return !!t[k];});
+    var triggerFloor = (t.statutory||t.agenticNoReview) ? "Critical" : any ? "High" : "Low";
+    // v3.8 impact floor (C43/E28): any confirmed Impact 5 -> at least Medium
+    var impactFloor = I===5 ? "Medium" : "Low";
+    var effRank=Math.max(rankOf(basisT), rankOf(triggerFloor), rankOf(impactFloor));
+    var eff=tierByRank(effRank), reason="";
+    if(effRank>rankOf(basisT)){
+      reason = rankOf(triggerFloor)===effRank ? "trigger" : "impact";
+    }
+    return {maxImpact:I, inherent:inh, residual:res, inherentTier:inhT, residualTier:resT,
+            useResidual:useResidual, needsVerify:needsVerify, basisTier:basisT,
+            triggerFloor:triggerFloor, impactFloor:impactFloor, anyTrigger:any,
+            effectiveTier:eff, floorReason:reason};
+  }
+
+  // ---- Engine 3: agency tier (AIG-AGT-02 v1.3 Tables A and B) ----
+  var AGENCY_DIMS = ["consequence","autonomy","authority","reach","controllability"];
+  // Table A: score 0..5 -> minimum tier (0..5)
+  var TABLE_A = {
+    consequence:    [0,1,2,3,4,5],
+    autonomy:       [0,1,2,2,3,5],
+    authority:      [0,1,2,3,3,5],
+    reach:          [0,0,1,2,3,5],
+    controllability:[0,0,1,2,4,5]
+  };
+  var FLAGS = ["persistence","memory","delegation","toolDiscovery","credentialAccess",
+               "selfModification","replication","goalAdaptation","externalCommunication","financialAuthority"];
+  var AGENCY_TIERS = [
+    {id:"T0", name:"informational"},
+    {id:"T1", name:"assisted"},
+    {id:"T2", name:"bounded agent"},
+    {id:"T3", name:"consequential agent"},
+    {id:"T4", name:"high-agency"},
+    {id:"T5", name:"exceptional / high-consequence"}
+  ];
+  /* a = {consequence, autonomy, authority, reach, controllability (0..5, 5 = hardest to stop or reverse),
+          flags:{persistence,...}, createsAgents:bool, escalationTrigger:bool (Table B rule D1)} */
+  function agency(a){
+    var f=a.flags||{}, floors=[];
+    function add(rule, tier, label){ floors.push({rule:rule, tier:tier, label:label}); }
+    AGENCY_DIMS.forEach(function(k){ add("A:"+k, TABLE_A[k][a[k]], k+" "+a[k]); });
+    var hi=[a.autonomy,a.authority,a.reach].filter(function(v){return v>=4;}).length;
+    if(hi>=2) add("B1",4,"Two or more of Autonomy, Authority and Reach at 4 or more");
+    if(a.consequence>=4 && a.controllability>=4) add("B2",5,"Consequence 4+ and Controllability 4+");
+    if(f.memory || f.externalCommunication) add("C1",1,"Memory or external communication flag");
+    if(f.persistence||f.delegation||f.toolDiscovery||f.credentialAccess||f.goalAdaptation)
+      add("C2",2,"Persistence, delegation, tool discovery, credential access or goal adaptation flag");
+    if(f.financialAuthority) add("C3",3,"Financial authority flag");
+    if((f.persistence||f.delegation||f.toolDiscovery) && (a.autonomy>=3 || a.authority>=3))
+      add("C4",4,"Persistence, delegation or tool discovery with Autonomy 3+ or Authority 3+");
+    if(f.replication || f.selfModification || a.createsAgents)
+      add("C5",5,"Replication or self-modification flag, or can create new agents");
+    if(a.escalationTrigger) add("D1",5,"Agentic mandatory escalation trigger present");
+    var tier=0; floors.forEach(function(x){ if(x.tier>tier) tier=x.tier; }); // highest floor wins (minimum T0)
+    var setBy=floors.filter(function(x){return x.tier===tier && tier>0;}).map(function(x){return x.rule;});
+    return {tier:tier, id:AGENCY_TIERS[tier].id, name:AGENCY_TIERS[tier].name, floors:floors, setBy:setBy};
+  }
+  // AIG-AGT-03 §6 / AIG-DEC-01 Agentic pathway: minimum risk-tier pathway per agency tier.
+  // T0/T1 none; T2 Medium; T3 High; T4 High (Critical where actions run without evidenced
+  // per-action human review); T5 Critical. Returns a rank 0 (none) .. 4.
+  function agencyMinimum(tier, noPerActionReview){
+    if(tier<=1) return 0;
+    if(tier===2) return 2;
+    if(tier===3) return 3;
+    if(tier===4) return noPerActionReview ? 4 : 3;
+    return 4;
+  }
+  // AIG-AGT-03 §6 "Agentic requirement" column, verbatim.
+  var AGENTIC_REQUIREMENT = [
+    "No minimum pathway and no further agentic triage; as an action-capable use, Gate 2 (agentic control checkpoints) and Gate 6 (permitted autonomy) still apply (R1, R2), and the \u00a74.4.6 floor applies (R3); recorded on the Agent Record (AIG-AGT-04)",
+    "Normal route (standard AI review); Gate 2 and Gate 6 mandatory; recorded on the Agent Record (AIG-AGT-04)",
+    "Agentic controls review at Gate 2 (Technical design authority, with AI Governance Working Group input); the forum for the governing pathway decides",
+    "As T2, plus a formal AI Assurance Board recommendation before the decision",
+    "High-agency review: as T3, and the AIG-ASS-11 security review (ASI01\u2013ASI10) complete before the Gate 2 decision",
+    "Executive and safety escalation (SRO and Executive Sponsor oversight; independent challenge); no consequential production use until resolved"
+  ];
+  // Governing tier (Playbook §3.10.1, F.2): highest of the §4.4 risk tier, the §4.4.6 trigger
+  // floors, the §4.4.4 impact floor and, for action-capable uses, the agency minimum.
+  // The AGPI priority never enters it. canAct: "Yes" | "Unsure" (treated as Yes) | "No".
+  function governing(riskResult, canAct, agencyTier, noPerActionReview){
+    var actionCapable = canAct==="Yes" || canAct==="Unsure";
+    var riskRank=rankOf(riskResult.effectiveTier);
+    var minRank = actionCapable ? agencyMinimum(agencyTier, noPerActionReview) : 0;
+    var rank=Math.max(riskRank, minRank);
+    return {tier:tierByRank(rank), rank:rank, actionCapable:actionCapable,
+            agencyMinimum: minRank ? tierByRank(minRank) : "None",
+            raisedByAgency: minRank>riskRank};
+  }
+  // Playbook §3.9.5 safeguard: P1 below High, or P2 below Medium -> Working Group records the reason.
+  function priorityTierGap(priorityN, governingTier){
+    var r=rankOf(governingTier);
+    return (priorityN===1 && r<=2) || (priorityN===2 && r<=1);
+  }
+
+  return {TIERS:TIERS, AGPI_DIMS:AGPI_DIMS, agpiScore:agpiScore, agpiBand:agpiBand, priority:priority,
+          IMPACTS:IMPACTS, inherentTier:inherentTier, residualTier:residualTier, risk:risk,
+          AGENCY_DIMS:AGENCY_DIMS, TABLE_A:TABLE_A, FLAGS:FLAGS, AGENCY_TIERS:AGENCY_TIERS, agency:agency,
+          agencyMinimum:agencyMinimum, AGENTIC_REQUIREMENT:AGENTIC_REQUIREMENT, governing:governing,
+          priorityTierGap:priorityTierGap, rankOf:rankOf};
+})();
+if(typeof module!=="undefined" && module.exports){ module.exports=TriageEngines; }
+</script>
+
 <script>
 (function(){
   "use strict";
+  var E = window.TriageEngines;
 
-  // ---- AGPI configuration ----
-  var DIMS = [
-    {key:"resident",  name:"Resident impact",         weight:25, colour:"#122C47", external:true},
-    {key:"trust",     name:"Public trust",            weight:20, colour:"#1d3a5c", external:true},
-    {key:"legal",     name:"Legal exposure",          weight:20, colour:"#2f5680", external:true},
-    {key:"visibility",name:"Visibility",              weight:15, colour:"#C8AB36", external:false},
-    {key:"strategic", name:"Strategic significance",  weight:10, colour:"#d8c56f", external:false},
-    {key:"oversight", name:"Oversight",               weight:10, colour:"#b7bcc6", external:false}
-  ];
-  // ---- Risk configuration ----
-  var IMPACTS = [
-    {key:"safety",     name:"Resident impact"},
-    {key:"rights",     name:"Legal & regulatory impact"},
-    {key:"financial",  name:"Financial impact"},
-    {key:"operational",name:"Operational impact"},
-    {key:"reputation", name:"Reputational impact"}
-  ];
+  // ---- AGPI configuration (names and weights from AIG-ASS-01) ----
+  var COLOURS = {resident:"#122C47", trust:"#1d3a5c", legal:"#2f5680", visibility:"#C8AB36", strategic:"#d8c56f", oversight:"#b7bcc6"};
+  var DIMS = E.AGPI_DIMS.map(function(d){
+    return {key:d.key, name:d.name, weight:d.weight, colour:COLOURS[d.key], external:d.weight>=20};
+  });
+  // ---- Risk configuration (AIG-ASS-02 impact dimensions, rows 23-27) ----
+  // State keys for the risk engine are prefixed "i_" so they do not clash with AGPI keys.
+  var IMPACTS = E.IMPACTS.map(function(m){ return {key:"i_"+m.key, src:m.key, name:m.name}; });
 
   var state = {
     resident:3,trust:3,legal:3,visibility:3,strategic:3,oversight:3,
-    safety:3,rights:3,financial:3,operational:3,reputation:3,
+    i_resident:3,i_legal:3,i_reputational:3,i_operational:3,i_financial:3,
     likelihood:3, control:3,
     t1:false,t2:false,t3:false,evidence:0
   };
 
   var PRESETS = {
     reset:{resident:3,trust:3,legal:3,visibility:3,strategic:3,oversight:3,
-           safety:3,rights:3,financial:3,operational:3,reputation:3,likelihood:3,control:3,t1:false,t2:false,t3:false,evidence:0},
+           i_resident:3,i_legal:3,i_reputational:3,i_operational:3,i_financial:3,likelihood:3,control:3,t1:false,t2:false,t3:false,evidence:0},
     faq:{resident:2,trust:3,legal:2,visibility:4,strategic:2,oversight:2,
-         safety:1,rights:2,financial:1,operational:2,reputation:3,likelihood:2,control:2,t1:false,t2:false,t3:false,evidence:1},
+         i_resident:1,i_legal:2,i_reputational:3,i_operational:2,i_financial:1,likelihood:2,control:2,t1:false,t2:false,t3:false,evidence:1},
     benefits:{resident:5,trust:5,legal:5,visibility:4,strategic:4,oversight:3,
-              safety:3,rights:5,financial:5,operational:3,reputation:4,likelihood:4,control:3,t1:false,t2:true,t3:false,evidence:0},
+              i_resident:3,i_legal:5,i_reputational:4,i_operational:3,i_financial:5,likelihood:4,control:3,t1:false,t2:true,t3:false,evidence:0},
     traffic:{resident:3,trust:2,legal:2,visibility:2,strategic:3,oversight:2,
-             safety:5,rights:1,financial:2,operational:3,reputation:2,likelihood:3,control:4,t1:false,t2:false,t3:false,evidence:0}
+             i_resident:5,i_legal:1,i_reputational:2,i_operational:3,i_financial:2,likelihood:3,control:4,t1:false,t2:false,t3:false,evidence:0}
   };
 
-  // ---- compute ----
-  function agpiScore(){
-    var s=0;
-    DIMS.forEach(function(d){ s += ((state[d.key]-1)/4)*d.weight; });
-    return s;
-  }
-  function agpiBand(score){
-    var v=score;  // band on the raw score (matches the AIG-ASS-01 AGPI workbook and the calculator)
-    if(v>=80) return {n:1,name:"Critical"};
-    if(v>=60) return {n:2,name:"High"};
-    if(v>=40) return {n:3,name:"Standard"};
-    if(v>=20) return {n:4,name:"Routine"};
-    return {n:5,name:"Observe"};
-  }
-  function maxImpact(){
-    return Math.max(state.safety,state.rights,state.financial,state.operational,state.reputation);
-  }
-  function inherent(){ return state.likelihood*maxImpact(); }
-  function residual(){ return inherent()*(state.control/5); }
-  function riskTier(r){
-    var v=Math.round(r*10)/10;  // match the calculator exactly: round residual to 1dp, then tier by <=
-    if(v<=5)  return {name:"Low",     colour:"var(--low)",  rank:1};
-    if(v<=10) return {name:"Medium",  colour:"var(--med)",  rank:2};
-    if(v<=15) return {name:"High",    colour:"var(--high)", rank:3};
-    return          {name:"Critical",colour:"var(--crit)", rank:4};
-  }
-  function tierByRank(rank){
-    if(rank>=4) return {name:"Critical",colour:"var(--crit)", rank:4};
-    if(rank===3) return {name:"High",   colour:"var(--high)",rank:3};
-    if(rank===2) return {name:"Medium", colour:"var(--med)", rank:2};
-    return             {name:"Low",     colour:"var(--low)", rank:1};
-  }
+  var TIER_COLOUR = {Low:"var(--low)", Medium:"var(--med)", High:"var(--high)", Critical:"var(--crit)"};
   function anyTrigger(){ return state.t1||state.t2||state.t3; }
+  function riskInput(){
+    var imp={}; IMPACTS.forEach(function(m){ imp[m.src]=state[m.key]; });
+    return {impacts:imp, likelihood:state.likelihood, control:state.control, evidence:state.evidence,
+            triggers:{special:state.t1, statutory:state.t2, agenticNoReview:state.t3}};
+  }
+  // Shared with Engine 3 so it can show the governing tier.
+  var listeners=[];
+  window.TriageEnginesUI = {
+    current:function(){ return {risk:E.risk(riskInput()), noPerActionReview:state.t3, anyTrigger:anyTrigger(),
+                                priority:E.priority(state, anyTrigger())}; },
+    onChange:function(fn){ listeners.push(fn); }
+  };
 
   // matrix cell colour by inherent value (likelihood*impact)
   function zoneColour(v){
@@ -549,17 +728,21 @@
       seg.className="seg"; seg.style.width=contrib+"%"; seg.style.background=d.colour;
       fillEl.appendChild(seg);
     });
-    var score=agpiScore(), band=agpiBand(score);
-    var forced=false;  // triggers uplift the risk pathway, not AGPI priority (§4.4.6)
+    var pr=E.priority(state, anyTrigger()), score=pr.score, band=pr.band;
+    var forced=pr.raised;  // v3.8 priority floor or the §3.9.6 trigger override (score unchanged)
     var aRes=document.getElementById("agpiResult");
     document.getElementById("agpiScore").textContent=score.toFixed(2);
     document.getElementById("agpiBandNum").textContent=band.n;
     document.getElementById("agpiBandName").textContent=band.name;
-    document.getElementById("agpiForced").style.display=forced?"block":"none";
+    var af=document.getElementById("agpiForced");
+    af.style.display=forced?"block":"none";
+    af.textContent=pr.label+" \u2014 "+(pr.reasons.indexOf("floor")>=0
+      ? "priority floor applied: Resident/Legal = 5"
+      : "a use with a \u00a74.4.6 trigger cannot be Priority 5");
     aRes.classList.toggle("overridden",forced);
 
     // Risk rows
-    var mx=maxImpact();
+    var rk=E.risk(riskInput()), mx=rk.maxImpact;
     IMPACTS.forEach(function(m){
       var val=state[m.key];
       document.getElementById("v_"+m.key).textContent=val;
@@ -580,58 +763,56 @@
     if(cell) cell.classList.add("inherent");
 
     // chain
-    var inh=inherent(), res=residual();
+    var inh=rk.inherent, res=rk.residual;
     document.getElementById("riskChain").innerHTML=
       '<span class="box">L <b>'+state.likelihood+'</b></span><span class="op">×</span>'+
       '<span class="box">max impact <b>'+mx+'</b></span><span class="op">=</span>'+
       '<span class="box">inherent <b>'+inh+'</b></span><span class="op">× ('+state.control+'÷5)</span>'+
-      '<span class="op">=</span><span class="box">residual <b>'+res.toFixed(1)+'</b></span>';
+      '<span class="op">=</span><span class="box">residual <b>'+(Math.round(res*100)/100)+'</b></span>';
 
-    // Playbook §4.4.8: inherent tier until controls are implemented and evidenced,
-    // then residual; never below the mandatory trigger floor (§4.4.6).
-    // High/Critical inherent tiers drop only on independently verified evidence.
-    var inhTier=riskTier(inh);
-    var needsVerify=state.evidence===1 && inhTier.rank>=3;
-    var useResidual=state.evidence===2 || (state.evidence===1 && !needsVerify);
-    var tier=useResidual?riskTier(res):inhTier;
-    var shown=useResidual?res:inh;
-    // §4.4.6: any trigger floors the risk tier to at least High; statutory (t2)
-    // or unreviewed agentic action (t3) floors it to Critical.
-    var criticalTrig=state.t2||state.t3;
-    var floorRank=criticalTrig?4:(anyTrigger()?3:0);
-    var effTier=tierByRank(Math.max(tier.rank,floorRank));
-    var rForced=effTier.rank>tier.rank;
+    // Playbook §4.4.3 / AIG-ASS-02 C43: inherent tier until controls are implemented and
+    // evidenced, then residual (High/Critical inherent tiers drop only on independently
+    // verified evidence); never below the §4.4.6 trigger floor or the §4.4.4 impact floor.
+    var tierName=rk.basisTier;
+    var shown=rk.useResidual?res:inh;
+    var effName=rk.effectiveTier;
+    var rForced=effName!==tierName;
     var rRes=document.getElementById("riskResult");
-    document.getElementById("riskScore").textContent=shown.toFixed(1);
-    document.getElementById("riskBasis").textContent=useResidual?"residual risk · controls evidenced":(needsVerify?"inherent risk · awaiting independent verification":"inherent risk · controls not yet evidenced");
+    document.getElementById("riskScore").textContent=(Math.round(shown*100)/100).toFixed(rk.useResidual?1:0);
+    document.getElementById("riskBasis").textContent=rk.useResidual?"residual risk · controls evidenced":(rk.needsVerify?"inherent risk · awaiting independent verification":"inherent risk · controls not yet evidenced");
     document.getElementById("evidence").value=String(state.evidence);
-    document.getElementById("riskTier").textContent=tier.name;
-    document.getElementById("tierDot").style.background=tier.colour;
+    document.getElementById("riskTier").textContent=tierName;
+    document.getElementById("tierDot").style.background=TIER_COLOUR[tierName];
     var rf=document.getElementById("riskForced");
     rf.style.display=rForced?"block":"none";
-    rf.textContent=effTier.name+" \u2014 floored by escalation trigger";
+    rf.textContent=effName+" \u2014 "+(rk.floorReason==="trigger"
+      ? "floored by escalation trigger"
+      : "impact floor: a Severe impact (5) sets at least Medium");
     rRes.classList.toggle("overridden",rForced);
-    var bt=document.getElementById("bannerTier"); if(bt) bt.textContent=criticalTrig?"Critical":"High";
+    var inote=document.getElementById("impactFloorNote");
+    if(inote) inote.style.display=(rk.impactFloor==="Medium" && !rForced)?"block":"none";
+    var bt=document.getElementById("bannerTier"); if(bt) bt.textContent=rk.triggerFloor;
 
     // escalation banner
     document.getElementById("banner").classList.toggle("show",anyTrigger());
 
-    // divergence note: priority rank (1 highest) vs risk rank
-    var prRank = 6-band.n;            // P1 -> 5 (most urgent) ... P5 -> 1
-    var rkRank = tier.rank;           // 1..4
+    // divergence note: priority (urgency) vs risk tier (route)
     var dv=document.getElementById("diverge");
     var msg="";
+    var effRank=E.rankOf(effName);
     if(!anyTrigger()){
-      if(band.n>=4 && tier.rank>=3){
-        msg="This system scores <b>low on priority</b> (Priority "+band.n+") yet lands "+
-            "<b>"+tier.name+" on risk</b>. A quietly dangerous system.";
-      } else if(band.n<=2 && tier.rank<=1){
-        msg="High priority, but <b>Low risk</b> — evidenced controls are doing their job. "+
-            "Attention is warranted, harm is currently well-contained.";
+      if(pr.n>=4 && effRank>=3){
+        msg="This system scores <b>low on priority</b> (Priority "+pr.n+") yet lands "+
+            "<b>"+effName+" on risk</b>. A quietly dangerous system: its route still follows the "+effName+" tier.";
+      } else if(E.priorityTierGap(pr.n, effName)){
+        msg="<b>Priority "+pr.n+"</b>, but the risk tier is <b>"+effName+"</b>. Priority sets how soon governance looks, "+
+            "not the route, so the route follows the "+effName+" tier. Because this sits below the guide (Priority 1 → High or Critical; "+
+            "Priority 2 → Medium or High), the AI Governance Working Group records the reason in AIG-ASS-02 Step 6 and may raise, never lower, the tier.";
       }
     }
     if(msg){ document.getElementById("divergeText").innerHTML=msg; dv.classList.add("show"); }
     else{ dv.classList.remove("show"); }
+    listeners.forEach(function(fn){ fn(); });
   }
 
   // ---- events ----
@@ -666,7 +847,7 @@
 
   <p class="eyebrow">AI Governance · Triage Engines</p>
   <h1 id="mdTitle">How the score is derived</h1>
-  <p class="stand">The methodology and statistical reasoning behind the two engines: what each number
+  <p class="stand">The methodology and statistical reasoning behind the three engines: what each number
     means, why it is calculated the way it is, and where the limits of the method lie.</p>
   <hr class="rule">
 
@@ -695,6 +876,11 @@
     stake. The second is a property of how it is <em>built and run</em>, and it moves the moment a control
     is strengthened or weakened. Because the two vary along different axes, each has its own engine, its own
     aggregation logic, and its own output scale. The rest of this document explains both.</p>
+  <p>They also do different jobs. The priority sets <strong>urgency and sequencing only</strong>: how soon and in
+    what order governance looks at a use. It does not set the route. The route (decision forum, assessments,
+    gates and review cadence) follows the <strong>governing tier</strong>: the highest of the risk tier, any
+    mandatory escalation trigger floor, the impact floor and, for systems that can act, the minimum pathway set by
+    the agency tier (Playbook §3.10.1 and Appendix F.2). The priority never raises or lowers the governing tier.</p>
 
   <!-- ===== 2 ===== -->
   <h2 id="agpi"><span class="n">02</span>The Priority engine — the AGPI</h2>
@@ -719,12 +905,12 @@
   <table>
     <thead><tr><th>Dimension</th><th class="num">Weight</th><th>Orientation</th></tr></thead>
     <tbody>
-      <tr><td>Resident impact</td><td class="num">25</td><td>Outward-facing</td></tr>
-      <tr><td>Public trust</td><td class="num">20</td><td>Outward-facing</td></tr>
-      <tr><td>Legal exposure</td><td class="num">20</td><td>Outward-facing</td></tr>
-      <tr><td>Visibility</td><td class="num">15</td><td>Internal</td></tr>
-      <tr><td>Strategic significance</td><td class="num">10</td><td>Internal</td></tr>
-      <tr><td>Oversight</td><td class="num">10</td><td>Internal</td></tr>
+      <tr><td>Resident Impact</td><td class="num">25</td><td>Outward-facing</td></tr>
+      <tr><td>Public Trust &amp; Reputation</td><td class="num">20</td><td>Outward-facing</td></tr>
+      <tr><td>Legal &amp; Regulatory Exposure</td><td class="num">20</td><td>Outward-facing</td></tr>
+      <tr><td>Governance Visibility &amp; Accountability</td><td class="num">15</td><td>Internal</td></tr>
+      <tr><td>Strategic Value &amp; Organisational Dependency</td><td class="num">10</td><td>Internal</td></tr>
+      <tr><td>Human Oversight &amp; Decision Authority</td><td class="num">10</td><td>Internal</td></tr>
     </tbody>
   </table>
 
@@ -738,25 +924,34 @@
   </div>
 
   <h3>Step 3 — band the index</h3>
-  <p>The continuous index is cut into five priority bands. Where a score falls on a boundary or carries a
-    fractional part, it is resolved to the <strong>higher</strong> band — a precautionary rule that always
-    errs toward more scrutiny, not less.</p>
+  <p>The continuous index is cut into five priority bands on the unrounded score (AIG-ASS-01; Playbook
+    §3.9.6). A score that lands exactly on a threshold takes the <strong>higher</strong> priority, so 60 is
+    Priority 2; a score just below it, such as 58.75, stays in Priority 3.</p>
   <table>
-    <thead><tr><th class="num">AGPI</th><th>Band</th></tr></thead>
+    <thead><tr><th class="num">AGPI</th><th>Priority (urgency)</th></tr></thead>
     <tbody>
-      <tr><td class="num">80&ndash;100</td><td>Priority 1 — Critical</td></tr>
-      <tr><td class="num">60&ndash;79</td><td>Priority 2 — High</td></tr>
-      <tr><td class="num">40&ndash;59</td><td>Priority 3 — Standard</td></tr>
-      <tr><td class="num">20&ndash;39</td><td>Priority 4 — Routine</td></tr>
-      <tr><td class="num">below 20</td><td>Priority 5 — Observe</td></tr>
+      <tr><td class="num">&ge;80</td><td>Priority 1 – Critical</td></tr>
+      <tr><td class="num">&ge;60 to &lt;80</td><td>Priority 2 – High</td></tr>
+      <tr><td class="num">&ge;40 to &lt;60</td><td>Priority 3 – Standard</td></tr>
+      <tr><td class="num">&ge;20 to &lt;40</td><td>Priority 4 – Routine</td></tr>
+      <tr><td class="num">&lt;20</td><td>Priority 5 – Observe</td></tr>
     </tbody>
   </table>
 
+  <h3>Step 4 — apply the priority floor and the trigger override</h3>
+  <p>Two rules can lift the priority without changing the AGPI score. The <strong>priority floor</strong>
+    (Proposed — for Council confirmation): if Resident Impact or Legal &amp; Regulatory Exposure is scored 5, the
+    priority is at least Priority 2 – High, whatever the index; the AGPI Triage Tool (AIG-ASS-01) shows
+    &ldquo;Priority floor applied: Resident/Legal = 5&rdquo; when it bites. The <strong>override rule</strong>: a use
+    that meets a mandatory escalation trigger cannot be Priority 5 – Observe. Where both apply, the higher
+    priority results. Like the priority itself, both set urgency, not the route.</p>
+  <div class="formula">priority = AGPI band<br>&nbsp;&nbsp;&nbsp;&nbsp;if <span class="c">Resident Impact = 5 or Legal &amp; Regulatory Exposure = 5</span>&nbsp;&rarr;&nbsp;at least Priority 2<br>&nbsp;&nbsp;&nbsp;&nbsp;if <span class="c">any escalation trigger</span>&nbsp;&rarr;&nbsp;not Priority 5</div>
+
   <h3>Behaviour worth knowing</h3>
   <p>Because the model is linear, its sensitivity is fixed and transparent: a one-point change on any
-    dimension moves the index by exactly a quarter of that dimension's weight. Moving resident impact by one
-    point shifts the score by 6.25; moving oversight by one point shifts it by only 2.5. Nothing is hidden in
-    interactions or thresholds. The index is <em>monotonic</em> (raising any input never lowers the score),
+    dimension moves the index by exactly a quarter of that dimension's weight. Moving Resident Impact by one
+    point shifts the score by 6.25; moving Human Oversight &amp; Decision Authority by one point shifts it by only
+    2.5. Nothing is hidden in interactions; the only discontinuities are the band thresholds and the priority floor. The index is <em>monotonic</em> (raising any input never lowers the score),
     <em>bounded</em> (always 0&ndash;100), and <em>compensatory</em> (a low score on one dimension can be
     offset by a high score on another). That last property is intentional here, and it is precisely the
     property the Risk engine is built <em>not</em> to have — see section&nbsp;04.</p>
@@ -789,8 +984,8 @@
   <h3>Step 3 — choose which score sets the tier</h3>
   <p>A control that is only planned, designed or unverified does not lower the tier. Until the controls credited
     in the score are <strong>implemented and evidenced</strong>, the tier follows the <em>inherent</em> score;
-    once they are, it follows the <em>residual</em> score. Either way, a mandatory escalation trigger can only
-    raise it (Playbook §4.4.8). Where the inherent tier is High or Critical, the evidence must also be
+    once they are, it follows the <em>residual</em> score. Either way, a mandatory escalation trigger or the impact
+    floor can only raise it (Playbook §4.4.3; AIG-ASS-02). Where the inherent tier is High or Critical, the evidence must also be
     <strong>independently verified</strong> before the tier can drop. This is the same principle the framework
     applies to agents: a documented control is not an implemented control.</p>
   <p>The tier is a <em>governance</em> tier: it sets how much scrutiny a use gets. It is not a legal
@@ -799,7 +994,8 @@
   <div class="formula">score for tier = controls evidenced (verified if inherent is High/Critical) ? residual : inherent</div>
 
   <h3>Step 4 — tier the score</h3>
-  <p>As with priority, boundaries resolve to the higher tier.</p>
+  <p>As with priority, boundaries resolve to the higher tier. A residual score that falls between bands is
+    classified at the higher band (Playbook §4.4.3 and §4.4.8): 5.4 is Medium, 10.4 is High.</p>
   <table>
     <thead><tr><th class="num">Score</th><th>Tier</th></tr></thead>
     <tbody>
@@ -809,6 +1005,13 @@
       <tr><td class="num">16&ndash;25</td><td><span class="tierpill" style="background:var(--crit)">Critical</span></td></tr>
     </tbody>
   </table>
+  <h3>Step 5 — apply the floors</h3>
+  <p>The tier from Step 4 is never below two floors. Any mandatory escalation trigger sets at least High, or
+    Critical for statutory decisions or action without evidenced per-action human review (section&nbsp;05). The
+    <strong>impact floor</strong> (Proposed — for Council confirmation; Playbook §4.4.4): a confirmed Impact score of 5
+    (Severe) on any dimension sets at least Medium, whatever the likelihood, so Impact 5 &times; Likelihood 1 = 5
+    is governed as Medium, not Low.</p>
+  <div class="formula">risk tier = max( tier from Step 4, trigger floor, impact floor )<br><span class="c">impact floor = Medium if any impact dimension is 5</span></div>
   <p>Being multiplicative, the engine's sensitivity is contextual rather than fixed: a one-point change in
     likelihood matters more when impact is high, because the two terms interact. That is a faithful reflection
     of how risk actually behaves — raising the odds of a minor event is not the same as raising the odds of a
@@ -837,26 +1040,46 @@
     consequence, autonomy, authority, reach and controllability — and turns that profile into an agency tier
     from T0 to T5.</p>
   <ul class="tight">
-    <li><strong>The base is a maximum, not a sum.</strong> The base tier is
-      <code>max(autonomy, authority)</code>: the most the agent can do unaided. Averaging would let a high
-      authority be diluted by low scores elsewhere, which is exactly the wrong behaviour for delegated power.</li>
-    <li><strong>Floors only ever raise.</strong> Certain readings lift the tier above the base and can never
-      lower it: high consequence or low controllability floors to at least T3; catastrophic consequence or an
-      effectively irreversible action, whole-estate reach, open-ended autonomy, or a high-impact agency
-      multiplier (delegation, tool discovery, credential access, self-modification or replication) floor to at
-      least T4; a severe-and-hard-to-contain combination reaches T5.</li>
-    <li><strong>The profile decides, not an average.</strong> A clever model wired to nothing stays low; a
-      modest model wired to payments and irreversible external action rises, because the tier follows the
-      shape of the profile, not a blended score.</li>
+    <li><strong>Every reading sets a floor.</strong> Each dimension score maps to a minimum tier (AIG-AGT-02
+      Table A): for example Consequence 3 sets at least T3, Controllability 4 sets at least T4, and any dimension at
+      5 sets T5. Averaging would let one high reading be diluted by low scores elsewhere, which is exactly the
+      wrong behaviour for delegated power.</li>
+    <li><strong>Combinations and flags add floors.</strong> Table B adds floors for combinations and for the ten
+      multiplier flags: two or more of Autonomy, Authority and Reach at 4 or more sets T4; Consequence and
+      Controllability both 4 or more sets T5; memory or external communication sets T1; persistence, delegation,
+      tool discovery, credential access or goal adaptation sets T2; financial authority sets T3; persistence,
+      delegation or tool discovery with Autonomy or Authority of 3 or more sets T4; replication, self-modification
+      or the ability to create new agents sets T5; and any agentic mandatory escalation trigger sets T5.</li>
+    <li><strong>The highest floor wins.</strong> The agency tier is the highest floor triggered (minimum T0). No
+      rule, average or adjustment lowers it; an adjustment may only raise it, with its reason recorded. A clever
+      model wired to nothing stays low; a modest model wired to payments and irreversible external action rises.</li>
   </ul>
-  <p>The tier then sets the route: T0 a standard record, T1 the ordinary AI review, T2 to T3 agentic controls
-    review at rising gates, T4 a high-agency review, and T5 executive and safety escalation. The thresholds are
-    the framework's own rule and are tunable; the design point is that agency is treated as a profile with
-    safety floors, in the same non-compensatory spirit as the risk engine's maximum. The interactive Engine 3
-    above lets you watch a floor lift the tier as you move the sliders.</p>
-  <p><strong>Where it comes from.</strong> The five agency dimensions, the autonomy scale and the safety
-    floors are derived from OWASP's 2026 agentic guidance, in particular the Top 10 for Agentic Applications
-    and the Agent Control Standard, alongside the framework's own agentic triage method. Full citations are in
+  <p>The tier then sets a <strong>minimum pathway</strong> on the risk-tier scale (AIG-AGT-03 §6; Gate Map
+    AIG-DEC-01, Agentic pathway; Proposed — for Council confirmation). No new board is created: the existing
+    forums, gates and records apply for the governing tier.</p>
+  <table>
+    <thead><tr><th>Agency tier</th><th>Minimum pathway</th><th>Agentic requirement</th></tr></thead>
+    <tbody>
+      <tr><td>T0 informational</td><td>None</td><td>No further agentic triage; Gate 2 and Gate 6 still apply</td></tr>
+      <tr><td>T1 assisted</td><td>None</td><td>Normal route; recorded on the Agent Record (AIG-AGT-04)</td></tr>
+      <tr><td>T2 bounded agent</td><td>Medium</td><td>Agentic controls review at Gate 2</td></tr>
+      <tr><td>T3 consequential agent</td><td>High</td><td>As T2, plus a formal AI Assurance Board recommendation before the decision</td></tr>
+      <tr><td>T4 high-agency</td><td>High (Critical where actions run without evidenced per-action human review)</td><td>As T3, and the AIG-ASS-11 security review complete before the Gate 2 decision</td></tr>
+      <tr><td>T5 exceptional / high-consequence</td><td>Critical</td><td>Executive and safety escalation; no consequential production use until resolved</td></tr>
+    </tbody>
+  </table>
+  <div class="formula">governing tier = max( risk tier incl. trigger and impact floors, agency minimum )<br><span class="c">the AGPI priority is not an input</span></div>
+  <p>For every action-capable use, at any agency tier including T0, Gate 2 (technical design) is mandatory and
+    Gate 6 (go-live) grants the permitted autonomy level, recorded in AIG-DEC-03 and on the Agent Record. Where
+    it is unclear whether each action is reviewed by a person before it executes, &ldquo;Unsure&rdquo; is treated as
+    &ldquo;No&rdquo;, which engages the Critical trigger floor. The tier-assignment rules are the framework's own
+    and are tunable; the design point is that agency is treated as a profile with safety floors, in the same
+    non-compensatory spirit as the risk engine's maximum. The interactive Engine 3 above lets you watch a floor
+    lift the tier, and the governing tier follow it, as you move the sliders.</p>
+  <p><strong>Where it comes from.</strong> The five agency dimensions, the multipliers and the tiers follow the
+    framework's Agentic Classification Reference (AIG-AGT-02, Tables A and B, Proposed — for Council
+    confirmation) and Playbook Appendix F.7, aligned to OWASP's 2026 agentic guidance, in particular the Top 10
+    for Agentic Applications and the Agent Control Standard. Full citations are in
     the References below, and the source project is the
     <a href="https://genai.owasp.org/" target="_blank" rel="noopener">OWASP GenAI Security Project</a>.</p>
 
@@ -867,7 +1090,7 @@
     <strong>OR</strong> — a disjunctive override — sitting on top of the risk engine:</p>
   <div class="formula">if <span class="c">any</span> trigger is met&nbsp;&rarr;&nbsp;risk tier = at least High<br>&nbsp;&nbsp;&nbsp;&nbsp;if <span class="c">statutory</span> or <span class="c">unreviewed agentic</span>&nbsp;&rarr;&nbsp;at least Critical<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="c">regardless of the calculated scores</span></div>
   <p>Special-category data, statutory decisions, and agentic action without per-action human
-    review are three of the seven. Any single one floors the risk tier (to Critical for statutory or unreviewed agentic action, otherwise High) and mandates comprehensive assurance and governance approval by the relevant forum under delegated authority. Statistically this is a <em>knock-out criterion</em>: a hard constraint that cannot be
+    review are three of the seven. Any single one floors the risk tier (to Critical for statutory decisions or action without evidenced per-action review, otherwise High) and requires comprehensive assurance and a decision by the officer or forum with confirmed delegation (Playbook §4.4.6). A trigger does not change the AGPI score, but a use that meets one cannot be Priority 5. Statistically this is a <em>knock-out criterion</em>: a hard constraint that cannot be
     traded off or averaged away, deliberately placed outside the scoring so that specific, well-understood
     hazards can never be scored into invisibility. The higher-band rounding rule performs a gentler version
     of the same protective job at every boundary.</p>
@@ -890,6 +1113,12 @@
       structural fact is why the two come apart (once the controls are evidenced), and why they are reported as two coordinates rather than
       one.</p>
   </div>
+  <p>The two readings meet in only one place, and not by blending: the route. The governing tier is the
+    highest of the risk tier (with its trigger and impact floors) and, for systems that can act, the agency
+    minimum. The priority stays outside it and decides only how soon the case is taken. Where the priority is
+    Priority 1 or 2 but the governing tier is lower than the guide (Priority 1 &rarr; High or Critical; Priority 2
+    &rarr; Medium or High), the AI Governance Working Group records the reason in the assessment rationale
+    (AIG-ASS-02 Step 6) and may raise, but never lower, the tier.</p>
 
   <!-- ===== 7 ===== -->
   <h2 id="limits"><span class="n">07</span>Limits and honest caveats</h2>
@@ -945,7 +1174,9 @@
   <button class="md-close" type="button" style="margin-top:36px">&larr; Back to the tool</button>
 
   <footer>
-    Companion to the Triage Engines simulation. Decision support only. Runs entirely in the browser,
+    Companion to the Triage Engines simulation. Aligned to AI Governance suite v3.9 (Playbook AIG-GOV-02
+    v19.9.10; AIG-ASS-01 v1.3; AIG-ASS-02 v1.8; AIG-AGT-02 v1.3; AIG-AGT-03 v1.2; AIG-DEC-01 v1.6). Rules marked
+    Proposed are for Council confirmation. Decision support only. Runs entirely in the browser,
     stores no data, single self-contained file, no dependencies.
   </footer>
 </div>
@@ -974,22 +1205,29 @@
 </script>
 
 <script>
-/* ===== Engine 3 — Agency tier (self-contained) ===== */
+/* ===== Engine 3 — Agency tier (AIG-AGT-02 Tables A and B) and governing tier ===== */
 (function(){
   "use strict";
+  var E=window.TriageEngines, UI=window.TriageEnginesUI;
+  // Scale anchors from AIG-AGT-02 §7
   var DIMS=[
-    {key:"consequence", name:"Consequence",   hint:"0 trivial to 5 catastrophic / irreversible"},
-    {key:"autonomy",    name:"Autonomy",      hint:"0 no action to 5 open-ended / persistent"},
-    {key:"authority",   name:"Authority",     hint:"0 information only to 5 highly consequential"},
-    {key:"reach",       name:"Reach",         hint:"0 isolated to 5 broad / public / physical"},
-    {key:"controllability", name:"Controllability (reversed)", hint:"0 instant stop + rollback to 5 effectively irreversible"}
+    {key:"consequence", name:"Consequence",   hint:"0 trivial to 5 potentially catastrophic or irreversible"},
+    {key:"autonomy",    name:"Autonomy",      hint:"0 acts only when a person triggers each action, to 5 open-ended"},
+    {key:"authority",   name:"Authority",     hint:"0 information only to 5 highly consequential authority"},
+    {key:"reach",       name:"Reach",         hint:"0 isolated to 5 broad, public or physical"},
+    {key:"controllability", name:"Controllability (reversed)", hint:"0 instant stop with full rollback to 5 effectively irreversible"}
   ];
-  var TIERS=["T0","T1","T2","T3","T4","T5"];
-  var NAMES=["Informational","Assisted","Bounded agent","Consequential agent","High-agency","Exceptional / high-consequence"];
-  var ROUTES=["standard record only","standard AI review","agentic controls review","agentic controls, higher gate","high-agency review","executive & safety escalation"];
-  var st={consequence:2,autonomy:2,authority:2,reach:2,controllability:1,multiplier:false};
+  var FLAG_LABELS={persistence:"Persistence",memory:"Memory",delegation:"Delegation",toolDiscovery:"Tool discovery",
+    credentialAccess:"Credential access",selfModification:"Self-modification",replication:"Replication",
+    goalAdaptation:"Goal adaptation",externalCommunication:"External communication",financialAuthority:"Financial authority"};
+  var EXTRA=[
+    {key:"createsAgents", label:"Can create new agents (rule C5)"},
+    {key:"escalationTrigger", label:"Agentic escalation trigger, e.g. containment cannot be demonstrated (rule D1)"}
+  ];
+  var MIN_LABEL=["None","None","Medium","High","High","Critical"];
+  var st={consequence:2,autonomy:2,authority:2,reach:2,controllability:1,flags:{},createsAgents:false,escalationTrigger:false,canAct:"Yes"};
   var rowsEl=document.getElementById("agencyRows");
-  if(!rowsEl) return;
+  if(!rowsEl || !E) return;
   DIMS.forEach(function(d){
     var row=document.createElement("div"); row.className="agrow";
     row.innerHTML=
@@ -998,46 +1236,75 @@
       '<input type="range" min="0" max="5" step="1" value="'+st[d.key]+'" id="ag_r_'+d.key+'" aria-label="'+d.name+', 0 to 5">';
     rowsEl.appendChild(row);
   });
-  function compute(){
-    // Mirrors the Multi-Board Triage Calculator's agency engine exactly.
-    // Controllability is REVERSED: 0 = instant stop + rollback, 5 = effectively irreversible.
-    var base=Math.max(st.autonomy, st.authority); // 0-5 maps to T0-T5
-    var tier=base;
-    var applied=[];
-    var raiseTo=function(n,label){ if(n>tier) tier=n; if(n>base) applied.push(label); };
-    if(st.consequence>=4 || st.controllability>=4) raiseTo(3,"High consequence or low controllability → at least T3");
-    if(st.consequence===5) raiseTo(4,"Potentially catastrophic consequence → at least T4");
-    if(st.controllability===5) raiseTo(4,"Effectively irreversible → at least T4");
-    if(st.reach===5) raiseTo(4,"Broad, public or physical reach → at least T4");
-    if(st.autonomy===5) raiseTo(4,"Open-ended autonomy → at least T4");
-    if(st.multiplier) raiseTo(4,"High-impact agency multiplier → at least T4");
-    if(st.consequence>=4 && st.controllability>=4) raiseTo(5,"Severe and hard to contain → T5");
-    return {base:base, tier:tier, applied:applied};
-  }
-  var multEl=document.getElementById("ag_mult");
-  if(multEl) multEl.addEventListener("change",function(){ st.multiplier=multEl.checked; render(); });
+  var flagsEl=document.getElementById("agencyFlags");
+  E.FLAGS.forEach(function(k){
+    var l=document.createElement("label");
+    l.innerHTML='<input type="checkbox" data-flag="'+k+'"> '+FLAG_LABELS[k];
+    flagsEl.appendChild(l);
+  });
+  EXTRA.forEach(function(x){
+    var l=document.createElement("label"); l.style.gridColumn="1 / -1";
+    l.innerHTML='<input type="checkbox" data-extra="'+x.key+'"> '+x.label;
+    flagsEl.appendChild(l);
+  });
+  var TIER_COLOUR={Low:"var(--low)",Medium:"var(--med)",High:"var(--high)",Critical:"var(--crit)"};
+
   function render(){
     DIMS.forEach(function(d){ document.getElementById("ag_v_"+d.key).textContent=st[d.key]; });
-    var r=compute();
-    document.getElementById("agtier").textContent=TIERS[r.tier];
-    document.getElementById("agtierName").textContent=NAMES[r.tier];
-    document.getElementById("agtierRoute").textContent=ROUTES[r.tier];
-    document.getElementById("agencyBase").textContent=
-      "Base tier "+TIERS[r.base]+" (from max of autonomy "+st.autonomy+" and authority "+st.authority+")"+
-      (r.tier>r.base ? ", raised to "+TIERS[r.tier]+" by a floor." : "; no floor raised it.");
+    var cur=UI.current();
+    var actionCapable = st.canAct!=="No";
+    document.getElementById("agencyBody").style.display=actionCapable?"":"none";
+    var r=E.agency(st);
     var f=document.getElementById("agencyFloors");
-    if(r.applied.length){
-      f.innerHTML='<b style="color:#8a2a2a;font-size:11px;letter-spacing:.06em;text-transform:uppercase">Floors that fired</b>'+
-        r.applied.map(function(x){return '<span class="floor on">↑ '+x+'</span>';}).join('');
+    var gov=E.governing(cur.risk, st.canAct, r.tier, cur.noPerActionReview);
+    if(!actionCapable){
+      document.getElementById("agtier").textContent="n/a";
+      document.getElementById("agtierName").textContent="Not applicable: cannot act";
+      document.getElementById("agtierRoute").textContent="no agency tier and no minimum pathway";
+      document.getElementById("agencyBase").textContent="";
+      f.innerHTML = cur.noPerActionReview
+        ? '<span class="floor conflict">Check the answers: the escalation trigger above says it acts without per-action review, but here it cannot act.</span>'
+        : '<span class="floor">Screen-negative: the standard AI review pathway applies and the agentic engine does not run.</span>';
     } else {
-      f.innerHTML='<span class="floor">No floor fired: the tier is the base. Raise consequence, reach or autonomy, or drop controllability, to see a floor lift it.</span>';
+      var fired=r.floors.filter(function(x){ return x.tier>0; })
+        .sort(function(a,b){ return b.tier-a.tier; });
+      f.innerHTML = fired.length
+        ? '<b style="color:#8a2a2a;font-size:11px;letter-spacing:.06em;text-transform:uppercase">Floors (highest wins)</b>'+
+          fired.map(function(x){
+            var lab = x.rule.indexOf("A:")===0 ? "Table A: "+x.label : "Rule "+x.rule+": "+x.label;
+            return '<span class="floor'+(x.tier===r.tier?' on':'')+'">'+(x.tier===r.tier?'↑ ':'')+lab+' → T'+x.tier+'</span>';
+          }).join('')
+        : '<span class="floor">Every floor is T0: it can act, but no action has a meaningful external effect.</span>';
+      document.getElementById("agtier").textContent=r.id;
+      document.getElementById("agtierName").textContent=r.name.charAt(0).toUpperCase()+r.name.slice(1);
+      var minTxt = r.tier===4 ? (cur.noPerActionReview ? "Critical (no evidenced per-action review)" : "High (Critical without evidenced per-action review)") : MIN_LABEL[r.tier];
+      document.getElementById("agtierRoute").textContent="minimum pathway: "+minTxt;
+      document.getElementById("agencyBase").textContent=E.AGENTIC_REQUIREMENT[r.tier]+".";
     }
+    // Governing tier
+    var why=[];
+    why.push("risk tier "+cur.risk.effectiveTier+(cur.risk.floorReason==="trigger"?" (trigger floor)":cur.risk.floorReason==="impact"?" (impact floor)":""));
+    if(actionCapable) why.push("agency minimum "+gov.agencyMinimum);
+    document.getElementById("govTier").textContent=gov.tier;
+    document.getElementById("govDot").style.background=TIER_COLOUR[gov.tier];
+    document.getElementById("govWhy").textContent="= highest of "+why.join(" and ")+"; priority ("+cur.priority.label+") sets urgency only.";
+    document.getElementById("govGates").textContent = actionCapable
+      ? "Action-capable use: Gate 2 (technical design, agentic control checkpoints) and Gate 6 (go-live, grants the permitted autonomy level, recorded in AIG-DEC-03 and AIG-AGT-04) are mandatory at every agency tier, T0 included."
+      : "Not action-capable: the risk-tier route applies with no agency minimum.";
   }
   DIMS.forEach(function(d){
     document.getElementById("ag_r_"+d.key).addEventListener("input",function(e){
       st[d.key]=Number(e.target.value); render();
     });
   });
+  flagsEl.querySelectorAll("input[data-flag]").forEach(function(c){
+    c.addEventListener("change",function(){ st.flags[c.getAttribute("data-flag")]=c.checked; render(); });
+  });
+  flagsEl.querySelectorAll("input[data-extra]").forEach(function(c){
+    c.addEventListener("change",function(){ st[c.getAttribute("data-extra")]=c.checked; render(); });
+  });
+  document.getElementById("ag_canact").addEventListener("change",function(e){ st.canAct=e.target.value; render(); });
+  UI.onChange(render);
   render();
 })();
 </script>
