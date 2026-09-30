@@ -295,7 +295,7 @@
         what order governance looks at the use. It does not set the route. Drag the control on the right — this number
         will not move. It is roughly control-independent. A Resident Impact or Legal &amp; Regulatory Exposure score of 5
         lifts the priority to at least Priority 2 (Proposed — for Council confirmation), and a use with an escalation
-        trigger cannot be Priority 5; the AGPI score itself does not change.</p>
+        trigger cannot be Priority 5: the trigger floor makes it at least Priority 4; the AGPI score itself does not change.</p>
     </section>
 
     <!-- ===== RISK ===== -->
@@ -340,10 +340,14 @@
   <!-- ===== escalation ===== -->
   <div class="escalation">
     <h3>Escalation triggers — the safety net</h3>
-    <p>Three of the seven Playbook §4.4.6 triggers shown. Any single one floors the risk tier — to High, or to Critical for statutory decisions or action without evidenced per-action human review — and requires comprehensive assurance and a decision by the officer or forum with confirmed delegation, regardless of the scores above. Triggers raise the risk tier, which sets the route; they do not change the AGPI score, though a use with a trigger cannot be Priority 5.</p>
+    <p>All seven Playbook §4.4.6 triggers (AIG-ASS-02 Step 4). Any single one floors the risk tier — to High, or to Critical for statutory decisions or action without evidenced per-action human review — and requires comprehensive assurance and a decision by the officer or forum with confirmed delegation, regardless of the scores above. Triggers raise the risk tier, which sets the route; they do not change the AGPI score, but a use with a trigger cannot be Priority 5: it is at least Priority 4 (the trigger floor, AIG-ASS-01 row 24).</p>
     <div class="trigs">
       <label class="trig"><input type="checkbox" class="trig-in" id="t1">Special-category data</label>
+      <label class="trig"><input type="checkbox" class="trig-in" id="t4">Vulnerable residents</label>
+      <label class="trig"><input type="checkbox" class="trig-in" id="t5">Housing, social care or homelessness decisions</label>
+      <label class="trig"><input type="checkbox" class="trig-in" id="t6">Novel or first-of-type deployment</label>
       <label class="trig"><input type="checkbox" class="trig-in" id="t2">Statutory decisions</label>
+      <label class="trig"><input type="checkbox" class="trig-in" id="t7">Significant supplier, model, data or scope change</label>
       <label class="trig"><input type="checkbox" class="trig-in" id="t3">Acts without evidenced per-action review (Unsure counts as no review)</label>
     </div>
     <div class="banner" id="banner">Escalation trigger met — risk tier floored to <b id="bannerTier">High</b>; comprehensive assurance and a decision by the officer or forum with confirmed delegation required.</div>
@@ -416,18 +420,18 @@
   <footer>
     Runs entirely in the browser. Stores no data. Single self-contained file, no dependencies. Decision support only.
     Dimension and impact labels follow AIG-ASS-01 and AIG-ASS-02; scoring logic follows the AI Governance suite
-    v3.9.1 workbooks (AIG-ASS-01 v1.3, AIG-ASS-02 v1.9) and the agency tier-assignment table (AIG-AGT-02 v1.4).
+    v3.9.2 workbooks (AIG-ASS-01 v1.4, AIG-ASS-02 v1.10) and the agency tier-assignment table (AIG-AGT-02 v1.4).
     Full derivation: <button type="button" class="doclink mdlg-open">methodology &amp; statistical basis</button>.
   </footer>
 </div>
 
 <script id="engine-logic">
 /* ===== Engine logic (pure functions; no DOM) =====
-   Aligned to AI Governance suite v3.9.1 (30 September 2026):
-   - AGPI: AIG-ASS-01 v1.3 (sheet "AGPI Triage": B10:B15 weights, D10:D16, B17) and Playbook §3.9.6
-   - Risk: AIG-ASS-02 v1.9 (sheet "Risk Assessment": C28, C37:C43, E41, C82) and Playbook §4.4.3, §4.4.4, §4.4.6, §4.4.8
+   Aligned to AI Governance suite v3.9.2 (30 September 2026):
+   - AGPI: AIG-ASS-01 v1.4 (sheet "AGPI Triage": B10:B15 weights, D10:D16, B17 with the row 23 trigger floor, B24) and Playbook §3.9.6
+   - Risk: AIG-ASS-02 v1.10 (sheet "Risk Assessment": C28, C37:C43, E41, C50:C56, C82) and Playbook §4.4.3, §4.4.4, §4.4.6, §4.4.8
    - Agency: AIG-AGT-02 v1.4 Tables A and B (reproduced in AIG-AGT-03 v1.3 §6)
-   - Governing tier and agency minimum pathway: AIG-AGT-03 §6, AIG-DEC-01 v1.7 (Agentic pathway), AIG-ASS-02 v1.9 C82, Playbook F.2
+   - Governing tier and agency minimum pathway: AIG-AGT-03 §6, AIG-DEC-01 v1.8 (Agentic pathway), AIG-ASS-02 v1.10 C82 (exact tier token), Playbook F.2
    The rules marked "Proposed" in the suite are Proposed — for Council confirmation. */
 var TriageEngines = (function(){
   "use strict";
@@ -456,13 +460,14 @@ var TriageEngines = (function(){
     var score=agpiScore(s), band=agpiBand(score), n=band.n, reasons=[];
     // v3.8 priority floor (AIG-ASS-01 B17/B21): Resident Impact = 5 or Legal & Regulatory Exposure = 5 -> at least Priority 2
     if((s.resident===5 || s.legal===5) && n>2){ n=2; reasons.push("floor"); }
-    // Playbook §3.9.6 override rule: a use meeting a §4.4.6 trigger cannot be Priority 5
+    // Trigger floor (Playbook §3.9.6; AIG-ASS-01 v1.4 B17 and row 24): a use meeting a §4.4.6
+    // trigger (row 23 Yes or Unsure) cannot be Priority 5; it becomes Priority 4 – Routine
     if(anyTrigger && n===5){ n=4; reasons.push("trigger"); }
     return {score:score, band:band, n:n, name:PRIORITIES[n], label:"Priority "+n+" – "+PRIORITIES[n],
             raised:n<band.n, reasons:reasons};
   }
 
-  // ---- Engine 2: risk (AIG-ASS-02 v1.9) ----
+  // ---- Engine 2: risk (AIG-ASS-02 v1.10) ----
   // Impact dimensions in AIG-ASS-02 order (rows 23-27).
   var IMPACTS = [
     {key:"resident",    name:"Resident Impact"},
@@ -483,7 +488,8 @@ var TriageEngines = (function(){
   }
   /* r = {impacts:{resident,legal,reputational,operational,financial}, likelihood, control,
           evidence: 0 not evidenced | 1 implemented and evidenced | 2 evidenced and independently verified,
-          triggers:{special, statutory, agenticNoReview, ...other §4.4.6 triggers as booleans}} */
+          triggers:{special, vulnerable, housingCare, novel, statutory, materialChange, agenticNoReview}:
+          the seven §4.4.6 triggers (AIG-ASS-02 C50:C56) as booleans} */
   function risk(r){
     var I=Math.max.apply(null, IMPACTS.map(function(m){return r.impacts[m.key];}));
     var inh=r.likelihood*I;                          // C37 = L x I
@@ -615,26 +621,31 @@ if(typeof module!=="undefined" && module.exports){ module.exports=TriageEngines;
     resident:3,trust:3,legal:3,visibility:3,strategic:3,oversight:3,
     i_resident:3,i_legal:3,i_reputational:3,i_operational:3,i_financial:3,
     likelihood:3, control:3,
-    t1:false,t2:false,t3:false,evidence:0
+    t1:false,t2:false,t3:false,t4:false,t5:false,t6:false,t7:false,evidence:0
   };
 
   var PRESETS = {
     reset:{resident:3,trust:3,legal:3,visibility:3,strategic:3,oversight:3,
-           i_resident:3,i_legal:3,i_reputational:3,i_operational:3,i_financial:3,likelihood:3,control:3,t1:false,t2:false,t3:false,evidence:0},
+           i_resident:3,i_legal:3,i_reputational:3,i_operational:3,i_financial:3,likelihood:3,control:3,t1:false,t2:false,t3:false,t4:false,t5:false,t6:false,t7:false,evidence:0},
     faq:{resident:2,trust:3,legal:2,visibility:4,strategic:2,oversight:2,
-         i_resident:1,i_legal:2,i_reputational:3,i_operational:2,i_financial:1,likelihood:2,control:2,t1:false,t2:false,t3:false,evidence:1},
+         i_resident:1,i_legal:2,i_reputational:3,i_operational:2,i_financial:1,likelihood:2,control:2,t1:false,t2:false,t3:false,t4:false,t5:false,t6:false,t7:false,evidence:1},
     benefits:{resident:5,trust:5,legal:5,visibility:4,strategic:4,oversight:3,
-              i_resident:3,i_legal:5,i_reputational:4,i_operational:3,i_financial:5,likelihood:4,control:3,t1:false,t2:true,t3:false,evidence:0},
+              i_resident:3,i_legal:5,i_reputational:4,i_operational:3,i_financial:5,likelihood:4,control:3,t1:false,t2:true,t3:false,t4:false,t5:false,t6:false,t7:false,evidence:0},
     traffic:{resident:3,trust:2,legal:2,visibility:2,strategic:3,oversight:2,
-             i_resident:5,i_legal:1,i_reputational:2,i_operational:3,i_financial:2,likelihood:3,control:4,t1:false,t2:false,t3:false,evidence:0}
+             i_resident:5,i_legal:1,i_reputational:2,i_operational:3,i_financial:2,likelihood:3,control:4,t1:false,t2:false,t3:false,t4:false,t5:false,t6:false,t7:false,evidence:0}
   };
 
   var TIER_COLOUR = {Low:"var(--low)", Medium:"var(--med)", High:"var(--high)", Critical:"var(--crit)"};
-  function anyTrigger(){ return state.t1||state.t2||state.t3; }
+  // All seven Playbook §4.4.6 triggers (v3.9.2, T-11).
+  var TRIGGER_KEYS = {t1:"special", t4:"vulnerable", t5:"housingCare", t6:"novel", t2:"statutory", t7:"materialChange", t3:"agenticNoReview"};
+  function anyTrigger(){ return Object.keys(TRIGGER_KEYS).some(function(k){ return !!state[k]; }); }
+  function triggerInput(){
+    var t={}; Object.keys(TRIGGER_KEYS).forEach(function(k){ t[TRIGGER_KEYS[k]]=!!state[k]; }); return t;
+  }
   function riskInput(){
     var imp={}; IMPACTS.forEach(function(m){ imp[m.src]=state[m.key]; });
     return {impacts:imp, likelihood:state.likelihood, control:state.control, evidence:state.evidence,
-            triggers:{special:state.t1, statutory:state.t2, agenticNoReview:state.t3}};
+            triggers:triggerInput()};
   }
   // Shared with Engine 3 so it can show the governing tier.
   var listeners=[];
@@ -831,7 +842,7 @@ if(typeof module!=="undefined" && module.exports){ module.exports=TriageEngines;
     b.addEventListener("click",function(){
       var p=PRESETS[b.dataset.preset]; if(!p) return;
       Object.keys(p).forEach(function(k){ state[k]=p[k]; });
-      ["t1","t2","t3"].forEach(function(t){ document.getElementById(t).checked=state[t]; });
+      Object.keys(TRIGGER_KEYS).forEach(function(t){ document.getElementById(t).checked=!!state[t]; });
       render();
     });
   });
@@ -938,12 +949,14 @@ if(typeof module!=="undefined" && module.exports){ module.exports=TriageEngines;
     </tbody>
   </table>
 
-  <h3>Step 4 — apply the priority floor and the trigger override</h3>
+  <h3>Step 4 — apply the priority floor and the trigger floor</h3>
   <p>Two rules can lift the priority without changing the AGPI score. The <strong>priority floor</strong>
     (Proposed — for Council confirmation): if Resident Impact or Legal &amp; Regulatory Exposure is scored 5, the
     priority is at least Priority 2 – High, whatever the index; the AGPI Triage Tool (AIG-ASS-01) shows
-    &ldquo;Priority floor applied: Resident/Legal = 5&rdquo; when it bites. The <strong>override rule</strong>: a use
-    that meets a mandatory escalation trigger cannot be Priority 5 – Observe. Where both apply, the higher
+    &ldquo;Priority floor applied: Resident/Legal = 5&rdquo; when it bites. The <strong>trigger floor</strong>
+    (Proposed — for Council confirmation): a use that meets a mandatory escalation trigger (AIG-ASS-01 row 23 Yes
+    or Unsure) cannot be Priority 5 – Observe; the AGPI Triage Tool makes it Priority 4 – Routine and row 24 shows
+    &ldquo;Trigger floor applied&rdquo;. Where both apply, the higher
     priority results. Like the priority itself, both set urgency, not the route.</p>
   <div class="formula">priority = AGPI band<br>&nbsp;&nbsp;&nbsp;&nbsp;if <span class="c">Resident Impact = 5 or Legal &amp; Regulatory Exposure = 5</span>&nbsp;&rarr;&nbsp;at least Priority 2<br>&nbsp;&nbsp;&nbsp;&nbsp;if <span class="c">any escalation trigger</span>&nbsp;&rarr;&nbsp;not Priority 5</div>
 
@@ -1089,8 +1102,9 @@ if(typeof module!=="undefined" && module.exports){ module.exports=TriageEngines;
     both scores. Seven escalation triggers guard against exactly that. They operate as a logical
     <strong>OR</strong> — a disjunctive override — sitting on top of the risk engine:</p>
   <div class="formula">if <span class="c">any</span> trigger is met&nbsp;&rarr;&nbsp;risk tier = at least High<br>&nbsp;&nbsp;&nbsp;&nbsp;if <span class="c">statutory</span> or <span class="c">unreviewed agentic</span>&nbsp;&rarr;&nbsp;at least Critical<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="c">regardless of the calculated scores</span></div>
-  <p>Special-category data, statutory decisions, and agentic action without per-action human
-    review are three of the seven. Any single one floors the risk tier (to Critical for statutory decisions or action without evidenced per-action review, otherwise High) and requires comprehensive assurance and a decision by the officer or forum with confirmed delegation (Playbook §4.4.6). A trigger does not change the AGPI score, but a use that meets one cannot be Priority 5. Statistically this is a <em>knock-out criterion</em>: a hard constraint that cannot be
+  <p>The seven are special-category data, vulnerable residents, housing, social care or homelessness decisions,
+    novel or first-of-type deployment, statutory decisions, a significant supplier, model, data or scope change,
+    and agentic action without per-action human review; the simulation lets you set each one. Any single one floors the risk tier (to Critical for statutory decisions or action without evidenced per-action review, otherwise High) and requires comprehensive assurance and a decision by the officer or forum with confirmed delegation (Playbook §4.4.6). A trigger does not change the AGPI score, but a use that meets one cannot be Priority 5 (it is at least Priority 4). Statistically this is a <em>knock-out criterion</em>: a hard constraint that cannot be
     traded off or averaged away, deliberately placed outside the scoring so that specific, well-understood
     hazards can never be scored into invisibility. The higher-band rounding rule performs a gentler version
     of the same protective job at every boundary.</p>
@@ -1174,8 +1188,8 @@ if(typeof module!=="undefined" && module.exports){ module.exports=TriageEngines;
   <button class="md-close" type="button" style="margin-top:36px">&larr; Back to the tool</button>
 
   <footer>
-    Companion to the Triage Engines simulation. Aligned to AI Governance suite v3.9.1 (Playbook AIG-GOV-02
-    v19.9.11; AIG-ASS-01 v1.3; AIG-ASS-02 v1.9; AIG-AGT-02 v1.4; AIG-AGT-03 v1.3; AIG-DEC-01 v1.7). Rules marked
+    Companion to the Triage Engines simulation. Aligned to AI Governance suite v3.9.2 (Playbook AIG-GOV-02
+    v19.9.12; AIG-ASS-01 v1.4; AIG-ASS-02 v1.10; AIG-AGT-02 v1.4; AIG-AGT-03 v1.3; AIG-DEC-01 v1.8). Rules marked
     Proposed are for Council confirmation. Decision support only. Runs entirely in the browser,
     stores no data, single self-contained file, no dependencies.
   </footer>
