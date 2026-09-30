@@ -1,7 +1,7 @@
 // Run: node --test test/
 // Checks the engine logic in index.html against fixtures generated from the AI Governance
-// suite v3.9 workbooks and documents (scripts/generate-fixtures.py; sources and cells are
-// named inside test/fixtures/suite-v3.9.json).
+// suite v3.9.1 workbooks and documents (scripts/generate-fixtures.py; sources and cells are
+// named inside test/fixtures/suite-v3.9.1.json).
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
@@ -10,7 +10,7 @@ const vm = require("node:vm");
 
 const root = path.join(__dirname, "..");
 const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
-const fx = JSON.parse(fs.readFileSync(path.join(__dirname, "fixtures", "suite-v3.9.json"), "utf8"));
+const fx = JSON.parse(fs.readFileSync(path.join(__dirname, "fixtures", "suite-v3.9.1.json"), "utf8"));
 const lo = JSON.parse(fs.readFileSync(path.join(__dirname, "fixtures", "libreoffice-checked.json"), "utf8"));
 
 function loadEngines() {
@@ -215,6 +215,35 @@ test("agency minimum pathway equals AIG-AGT-03 §6 (T0/T1 none, T2 Medium, T3 Hi
   for (let t = 0; t <= 5; t++) assert.equal(E.AGENTIC_REQUIREMENT[t], fx.agt03.agentic_requirement["T" + t]);
 });
 
+test("v3.9.1: agency minimum equals the AIG-ASS-02 v1.9 C82 agentic floor for every tier, T2 included (no carve-outs)", () => {
+  const lab = (r) => (r === 0 ? "None" : E.TIERS[r - 1]);
+  const c82 = fx.ass02.agentic_floor_c82;
+  for (let t = 0; t <= 5; t++) assert.equal(lab(E.agencyMinimum(t, false)), c82["T" + t], "T" + t);
+  assert.equal(c82.T2, "Medium");
+});
+
+test("v3.9.1: governing tier equals AIG-ASS-02 v1.9 C43 on the LibreOffice agentic grid (every tier, review Yes/No/Unsure, impact and trigger floors)", () => {
+  const cols = lo.ass02_agentic.columns;
+  let n = 0, conflicts = 0;
+  for (const row of lo.ass02_agentic.cases) {
+    const c = Object.fromEntries(cols.map((k, i) => [k, row[i]]));
+    // A T5 (Critical) pathway entered with C56 = No is a workbook data-entry conflict (C82 "AGENTIC TRIGGER
+    // CONFLICT", tier held at Incomplete); the simulation has no such entry state, so those rows are not compared.
+    if (c.C82 === "AGENTIC TRIGGER CONFLICT") { assert.equal(c.agency, "T5"); conflicts++; continue; }
+    const noReview = c.perActionReview !== "Yes";   // Unsure is treated as No (C56 Unsure -> Critical floor)
+    const impacts = { resident: c.maxImpact, legal: 1, reputational: 1, operational: 1, financial: 1 };
+    const triggers = { special: c.trigger.startsWith("C53"), statutory: c.trigger.startsWith("C54"), agenticNoReview: noReview };
+    const r = E.risk({ impacts, likelihood: c.L, control: c.C, evidence: 0, triggers });
+    const acting = c.agency !== "not action-capable";
+    const g = E.governing(r, acting ? "Yes" : "No", acting ? Number(c.agency.slice(1)) : 0, noReview);
+    assert.equal(g.tier, c.C43, JSON.stringify(c));
+    if (acting && !noReview) assert.equal(g.agencyMinimum, c.C82, JSON.stringify(c));
+    n++;
+  }
+  assert.equal(n + conflicts, 504);
+  assert.equal(conflicts, 24);
+});
+
 // ---------- Governing tier and priority/route separation ----------
 test("governing tier = highest of risk tier (with floors) and agency minimum; Unsure = Yes; No = no minimum", () => {
   const low = { effectiveTier: "Low" };
@@ -249,8 +278,9 @@ test("no 'higher of priority route and risk-tier route' wording and no stale Pla
   assert.doesNotMatch(html, /approval by the relevant forum under delegated authority/);
 });
 
-test("suite version line names v3.9 and the GOV-03 artefact versions", () => {
-  for (const v of ["suite v3.9", "AIG-GOV-02\n    v19.9.10", "AIG-ASS-01 v1.3", "AIG-ASS-02 v1.8", "AIG-AGT-02 v1.3", "AIG-AGT-03 v1.2", "AIG-DEC-01 v1.6"]) {
+test("suite version line names v3.9.1 and the GOV-03 artefact versions", () => {
+  assert.doesNotMatch(html, /suite v3\.9(?![.\d])/);
+  for (const v of ["suite v3.9.1", "AIG-GOV-02 v19.9.11", "AIG-ASS-01 v1.3", "AIG-ASS-02 v1.9", "AIG-AGT-02 v1.4", "AIG-AGT-03 v1.3", "AIG-DEC-01 v1.7"]) {
     assert.ok(html.replace(/\s+/g, " ").includes(v.replace(/\s+/g, " ")), v);
   }
 });
