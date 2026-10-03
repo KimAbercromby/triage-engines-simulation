@@ -45,7 +45,7 @@ needs to see.
 
 The scoring logic follows the AI Governance suite v3.9.7 sources: AIG-ASS-01 v1.4,
 AIG-ASS-02 v1.10, AIG-AGT-02 v1.6, AIG-AGT-03 v1.5, AIG-DEC-01 v1.10 and Playbook
-AIG-GOV-02 v19.9.15. Rules marked Proposed in the suite are for Council confirmation.
+AIG-GOV-02 v19.9.16. Rules marked Proposed in the suite are for Council confirmation.
 This tool is the explainer that sits alongside the Triage Calculator.
 
 ## The tool suite
