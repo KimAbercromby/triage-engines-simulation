@@ -420,18 +420,18 @@
   <footer>
     Runs entirely in the browser. Stores no data. Single self-contained file, no dependencies. Decision support only.
     Dimension and impact labels follow AIG-ASS-01 and AIG-ASS-02; scoring logic follows the AI Governance suite
-    v3.9.6 workbooks (AIG-ASS-01 v1.4, AIG-ASS-02 v1.10) and the agency tier-assignment table (AIG-AGT-02 v1.6).
+    v3.9.7 workbooks (AIG-ASS-01 v1.4, AIG-ASS-02 v1.10) and the agency tier-assignment table (AIG-AGT-02 v1.6).
     Full derivation: <button type="button" class="doclink mdlg-open">methodology &amp; statistical basis</button>.
   </footer>
 </div>
 
 <script id="engine-logic">
 /* ===== Engine logic (pure functions; no DOM) =====
-   Aligned to AI Governance suite v3.9.6 (3 October 2026):
+   Aligned to AI Governance suite v3.9.7 (3 October 2026):
    - AGPI: AIG-ASS-01 v1.4 (sheet "AGPI Triage": B10:B15 weights, D10:D16, B17 with the row 23 trigger floor, B24) and Playbook §3.9.6
    - Risk: AIG-ASS-02 v1.10 (sheet "Risk Assessment": C28, C37:C43, E41, C50:C56, C82) and Playbook §4.4.3, §4.4.4, §4.4.6, §4.4.8
    - Agency: AIG-AGT-02 v1.6 Tables A and B (reproduced in AIG-AGT-03 v1.5 §6)
-   - Governing tier and agency minimum pathway: AIG-AGT-03 §6, AIG-DEC-01 v1.10 (Agentic pathway), AIG-ASS-02 v1.10 C82 (exact tier token), Playbook F.2
+   - Governing tier and agency minimum pathway: AIG-AGT-03 §6, AIG-DEC-01 v1.11 (Agentic pathway), AIG-ASS-02 v1.10 C82 (exact tier token), Playbook F.2
    The rules marked "Proposed" in the suite are Proposed — for Council confirmation. */
 var TriageEngines = (function(){
   "use strict";
@@ -1188,8 +1188,8 @@ if(typeof module!=="undefined" && module.exports){ module.exports=TriageEngines;
   <button class="md-close" type="button" style="margin-top:36px">&larr; Back to the tool</button>
 
   <footer>
-    Companion to the Triage Engines simulation. Aligned to AI Governance suite v3.9.6 (Playbook AIG-GOV-02
-    v19.9.15; AIG-ASS-01 v1.4; AIG-ASS-02 v1.10; AIG-AGT-02 v1.6; AIG-AGT-03 v1.5; AIG-DEC-01 v1.10). Rules marked
+    Companion to the Triage Engines simulation. Aligned to AI Governance suite v3.9.7 (Playbook AIG-GOV-02
+    v19.9.16; AIG-ASS-01 v1.4; AIG-ASS-02 v1.10; AIG-AGT-02 v1.6; AIG-AGT-03 v1.5; AIG-DEC-01 v1.11). Rules marked
     Proposed are for Council confirmation. Decision support only. Runs entirely in the browser,
     stores no data, single self-contained file, no dependencies.
   </footer>
