@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Generate test/fixtures/suite-v3.9.6.json from the AI Governance suite v3.9.6 sources.
+"""Generate test/fixtures/suite-v3.9.7.json from the AI Governance suite v3.9.7 sources.
 
-Usage:  python3 scripts/generate-fixtures.py <folder holding the v3.9.6 .xlsx/.docx sources>
+Usage:  python3 scripts/generate-fixtures.py <folder holding the v3.9.7 .xlsx/.docx sources>
 
 Reads (read-only):
   AIG-ASS-01_AGPI_Triage_Tool_Proposed.xlsx          sheet "AGPI Triage" A10:B15 (dimensions, weights), B17 thresholds,
@@ -17,7 +17,7 @@ against LibreOffice recalculation of the real v3.9 workbooks on 54 sampled cases
 with 0 mismatches, and re-run on the v3.9.1 and v3.9.2 workbooks (AIG-ASS-02 v1.9 and v1.10) with the
 same results; those cases (AIG-ASS-01 v1.4 with the row 23 trigger answer No / Yes / Unsure), plus a
 504-case AIG-ASS-02 v1.10 agentic grid (C43, C82), are stored in test/fixtures/libreoffice-checked.json.
-The v3.9.3, v3.9.4 and v3.9.6 AIG-ASS-01 and AIG-ASS-02 workbooks are cell-for-cell identical to v3.9.2, so those cases still apply.
+The v3.9.3, v3.9.4, v3.9.6 and v3.9.7 AIG-ASS-01 and AIG-ASS-02 workbooks are cell-for-cell identical to v3.9.2, so those cases still apply.
 """
 import itertools, json, os, re, sys
 
@@ -25,7 +25,7 @@ import docx
 import openpyxl
 
 SRC = sys.argv[1] if len(sys.argv) > 1 else "."
-OUT = os.path.join(os.path.dirname(__file__), "..", "test", "fixtures", "suite-v3.9.6.json")
+OUT = os.path.join(os.path.dirname(__file__), "..", "test", "fixtures", "suite-v3.9.7.json")
 TIERS = ["Low", "Medium", "High", "Critical"]
 F01 = "AIG-ASS-01_AGPI_Triage_Tool_Proposed.xlsx"
 F02 = "AIG-ASS-02_AI_Risk_Assessment_Worksheet_Proposed.xlsx"
@@ -150,7 +150,7 @@ def agt03():
 
 
 if __name__ == "__main__":
-    out = {"suite": "v3.9.6 (3 October 2026)", "ass01": ass01(), "ass02": ass02(), "agt02": agt02(), "agt03": agt03()}
+    out = {"suite": "v3.9.7 (3 October 2026)", "ass01": ass01(), "ass02": ass02(), "agt02": agt02(), "agt03": agt03()}
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w") as f:
         json.dump(out, f, ensure_ascii=False, separators=(",", ":"))
