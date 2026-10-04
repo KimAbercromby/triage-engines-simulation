@@ -420,18 +420,18 @@
   <footer>
     Runs entirely in the browser. Stores no data. Single self-contained file, no dependencies. Decision support only.
     Dimension and impact labels follow AIG-ASS-01 and AIG-ASS-02; scoring logic follows the AI Governance suite
-    v3.9.8 workbooks (AIG-ASS-01 v1.4, AIG-ASS-02 v1.10) and the agency tier-assignment table (AIG-AGT-02 v1.6).
+    v3.9.9 workbooks (AIG-ASS-01 v1.4, AIG-ASS-02 v1.10) and the agency tier-assignment table (AIG-AGT-02 v1.6).
     Full derivation: <button type="button" class="doclink mdlg-open">methodology &amp; statistical basis</button>.
   </footer>
 </div>
 
 <script id="engine-logic">
 /* ===== Engine logic (pure functions; no DOM) =====
-   Aligned to AI Governance suite v3.9.8 (3 October 2026):
+   Aligned to AI Governance suite v3.9.9 (4 October 2026):
    - AGPI: AIG-ASS-01 v1.4 (sheet "AGPI Triage": B10:B15 weights, D10:D16, B17 with the row 23 trigger floor, B24) and Playbook §3.9.6
    - Risk: AIG-ASS-02 v1.10 (sheet "Risk Assessment": C28, C37:C43, E41, C50:C56, C82) and Playbook §4.4.3, §4.4.4, §4.4.6, §4.4.8
-   - Agency: AIG-AGT-02 v1.6 Tables A and B (reproduced in AIG-AGT-03 v1.5 §6)
-   - Governing tier and agency minimum pathway: AIG-AGT-03 §6, AIG-DEC-01 v1.12 (Agentic pathway), AIG-ASS-02 v1.10 C82 (exact tier token), Playbook F.2
+   - Agency: AIG-AGT-02 v1.6 Tables A and B (reproduced in AIG-AGT-03 v1.6 §6)
+   - Governing tier and agency minimum pathway: AIG-AGT-03 §6, AIG-DEC-01 v1.13 (Agentic pathway), AIG-ASS-02 v1.10 C82 (exact tier token), Playbook F.2
    The rules marked "Proposed" in the suite are Proposed — for Council confirmation. */
 var TriageEngines = (function(){
   "use strict";
@@ -569,8 +569,8 @@ var TriageEngines = (function(){
   }
   // AIG-AGT-03 §6 "Agentic requirement" column, verbatim.
   var AGENTIC_REQUIREMENT = [
-    "No minimum pathway and no further agentic triage; as an action-capable use, Gate 2 (agentic control checkpoints) and Gate 6 (permitted autonomy) still apply (R1, R2), and the \u00a74.4.6 floor applies (R3); recorded on the Agent Record (AIG-AGT-04)",
-    "Normal route (standard AI review); Gate 2 and Gate 6 mandatory; recorded on the Agent Record (AIG-AGT-04)",
+    "No minimum pathway and no further agentic triage; as an action-capable use, Gate 2 (agentic control checkpoints) and Gate 6 (permitted autonomy) still apply (R1, R2), and the \u00a74.4.6 floor applies (R3); recorded on the Agent Record (AIG-AGT-04; core record)",
+    "Normal route (standard AI review); Gate 2 and Gate 6 mandatory; recorded on the Agent Record (AIG-AGT-04; core record, plus the sheets its features need)",
     "Agentic controls review at Gate 2 (Technical design authority, with AI Governance Working Group input); the forum for the governing pathway decides",
     "As T2, plus a formal AI Assurance Board recommendation before the decision",
     "High-agency review: as T3, and the AIG-ASS-11 security review (ASI01\u2013ASI10) complete before the Gate 2 decision",
@@ -1074,7 +1074,7 @@ if(typeof module!=="undefined" && module.exports){ module.exports=TriageEngines;
     <thead><tr><th>Agency tier</th><th>Minimum pathway</th><th>Agentic requirement</th></tr></thead>
     <tbody>
       <tr><td>T0 informational</td><td>None</td><td>No further agentic triage; Gate 2 and Gate 6 still apply</td></tr>
-      <tr><td>T1 assisted</td><td>None</td><td>Normal route; recorded on the Agent Record (AIG-AGT-04)</td></tr>
+      <tr><td>T1 assisted</td><td>None</td><td>Normal route; recorded on the Agent Record (AIG-AGT-04; core record)</td></tr>
       <tr><td>T2 bounded agent</td><td>Medium</td><td>Agentic controls review at Gate 2</td></tr>
       <tr><td>T3 consequential agent</td><td>High</td><td>As T2, plus a formal AI Assurance Board recommendation before the decision</td></tr>
       <tr><td>T4 high-agency</td><td>High (Critical where actions run without evidenced per-action human review)</td><td>As T3, and the AIG-ASS-11 security review complete before the Gate 2 decision</td></tr>
@@ -1188,8 +1188,8 @@ if(typeof module!=="undefined" && module.exports){ module.exports=TriageEngines;
   <button class="md-close" type="button" style="margin-top:36px">&larr; Back to the tool</button>
 
   <footer>
-    Companion to the Triage Engines simulation. Aligned to AI Governance suite v3.9.8 (Playbook AIG-GOV-02
-    v19.9.17; AIG-ASS-01 v1.4; AIG-ASS-02 v1.10; AIG-AGT-02 v1.6; AIG-AGT-03 v1.5; AIG-DEC-01 v1.12). Rules marked
+    Companion to the Triage Engines simulation. Aligned to AI Governance suite v3.9.9 (Playbook AIG-GOV-02
+    v19.9.18; AIG-ASS-01 v1.4; AIG-ASS-02 v1.10; AIG-AGT-02 v1.6; AIG-AGT-03 v1.6; AIG-DEC-01 v1.13). Rules marked
     Proposed are for Council confirmation. Decision support only. Runs entirely in the browser,
     stores no data, single self-contained file, no dependencies.
   </footer>

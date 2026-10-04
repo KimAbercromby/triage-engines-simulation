@@ -1,7 +1,7 @@
 // Run: node --test test/
 // Checks the engine logic in index.html against fixtures generated from the AI Governance
-// suite v3.9.8 workbooks and documents (scripts/generate-fixtures.py; sources and cells are
-// named inside test/fixtures/suite-v3.9.8.json).
+// suite v3.9.9 workbooks and documents (scripts/generate-fixtures.py; sources and cells are
+// named inside test/fixtures/suite-v3.9.9.json).
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
@@ -10,7 +10,7 @@ const vm = require("node:vm");
 
 const root = path.join(__dirname, "..");
 const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
-const fx = JSON.parse(fs.readFileSync(path.join(__dirname, "fixtures", "suite-v3.9.8.json"), "utf8"));
+const fx = JSON.parse(fs.readFileSync(path.join(__dirname, "fixtures", "suite-v3.9.9.json"), "utf8"));
 const lo = JSON.parse(fs.readFileSync(path.join(__dirname, "fixtures", "libreoffice-checked.json"), "utf8"));
 
 function loadEngines() {
@@ -332,10 +332,10 @@ test("no 'higher of priority route and risk-tier route' wording and no stale Pla
   assert.doesNotMatch(html, /approval by the relevant forum under delegated authority/);
 });
 
-test("suite version line names v3.9.8 and the GOV-03 artefact versions", () => {
+test("suite version line names v3.9.9 and the GOV-03 artefact versions", () => {
   assert.doesNotMatch(html, /suite v3\.9(?![.\d])/);
   assert.doesNotMatch(html, /v3\.9\.1/);
-  for (const v of ["suite v3.9.8", "AIG-GOV-02 v19.9.17", "AIG-ASS-01 v1.4", "AIG-ASS-02 v1.10", "AIG-AGT-02 v1.6", "AIG-AGT-03 v1.5", "AIG-DEC-01 v1.12"]) {
+  for (const v of ["suite v3.9.9", "AIG-GOV-02 v19.9.18", "AIG-ASS-01 v1.4", "AIG-ASS-02 v1.10", "AIG-AGT-02 v1.6", "AIG-AGT-03 v1.6", "AIG-DEC-01 v1.13"]) {
     assert.ok(html.replace(/\s+/g, " ").includes(v.replace(/\s+/g, " ")), v);
   }
 });
