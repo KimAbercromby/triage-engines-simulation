@@ -35,7 +35,7 @@ needs to see.
   floors) and, for systems that can act, the agency minimum. The priority is not an input.
 - **Escalation triggers.** All seven Playbook §4.4.6 triggers can be set (special category data,
   vulnerable residents, housing, care or homelessness decisions, novel deployment, statutory decisions,
-  significant supplier, model, data or scope change, and action without evidenced per-action review).
+  significant AI supplier or model changes that materially alter the risk profile of an existing deployment, and action without evidenced per-action review).
   Any single one floors the risk tier (High, or Critical for statutory decisions or action without
   evidenced per-action review) and requires comprehensive assurance.
 - **Full methodology.** A companion write-up explaining the maths, the
@@ -43,9 +43,9 @@ needs to see.
   engine, why the axes are kept separate, the honest limits of the method, and
   the references behind it.
 
-The scoring logic follows the AI Governance suite v3.9.10 sources: AIG-ASS-01 v1.4,
+The scoring logic follows the AI Governance suite v3.9.11 sources: AIG-ASS-01 v1.4,
 AIG-ASS-02 v1.10, AIG-AGT-02 v1.7, AIG-AGT-03 v1.7, AIG-DEC-01 v1.14 and Playbook
-AIG-GOV-02 v19.9.19. Rules marked Proposed in the suite are for Council confirmation.
+AIG-GOV-02 v19.9.23. Rules marked Proposed in the suite are for Council confirmation.
 This tool is the explainer that sits alongside the Triage Calculator.
 
 ## The tool suite
@@ -72,7 +72,7 @@ Download `index.html` and open it in any web browser. Nothing else needed.
 
 ## Tests
 
-`node --test` checks the engine logic in `index.html` against fixtures generated from the v3.9.10
+`node --test` checks the engine logic in `index.html` against fixtures generated from the v3.9.11
 workbooks and documents (`python3 scripts/generate-fixtures.py <sources folder>`): all 15,625 AGPI
 score combinations with and without a §4.4.6 trigger (AIG-ASS-01 v1.4 trigger floor), a 3,000-case
 risk grid covering all seven triggers, the agency tier-assignment table over all 7,776 profiles,
