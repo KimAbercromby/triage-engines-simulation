@@ -84,7 +84,8 @@ def ass02():
     assert "IF(C28=5,2,1)" in c43 and 'IF(E41="Yes",C41,C38)' in c43, "C43 changed"
     assert ws["C41"].value.startswith('=IF(C40="","",IF(C40>15,"Critical",IF(C40>10,"High",IF(C40>5,"Medium","Low"))))')
     assert ws["C38"].value.startswith('=IF(C37="","",IF(C37>=16,"Critical",IF(C37>=11,"High",IF(C37>=6,"Medium","Low"))))')
-    version = re.search(r"AIG-ASS-02 (v[\d.]+)", ws["A2"].value).group(1)
+    _m = re.search(r"AIG-ASS-02 (v[\d.]+|draft)", ws["A2"].value or "")
+    version = _m.group(1) if _m else "unversioned"
     cases = []
     # All seven §4.4.6 triggers (C50:C56); C42: statutory or agentic -> Critical, any other -> High.
     c42 = ws["C42"].value

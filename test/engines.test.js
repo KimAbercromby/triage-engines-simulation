@@ -332,10 +332,9 @@ test("no 'higher of priority route and risk-tier route' wording and no stale Pla
   assert.doesNotMatch(html, /approval by the relevant forum under delegated authority/);
 });
 
-test("suite version line names v3.9.10 and the GOV-03 artefact versions", () => {
-  assert.doesNotMatch(html, /suite v3\.9(?![.\d])/);
-  assert.doesNotMatch(html, /v3\.9\.1(?!\d)/);
-  for (const v of ["suite v3.9.10", "AIG-GOV-02 v19.9.19", "AIG-ASS-01 v1.4", "AIG-ASS-02 v1.10", "AIG-AGT-02 v1.7", "AIG-AGT-03 v1.7", "AIG-DEC-01 v1.14"]) {
+test("suite version line names the suite version 1.0 draft and no retired version numbers", () => {
+  assert.doesNotMatch(html, /v3\.9\.\d|v19\.9|AIG-[A-Z]+-\d+ v\d/);
+  for (const v of ["suite version 1.0 draft", "AIG-GOV-02", "AIG-ASS-01", "AIG-ASS-02", "AIG-AGT-02", "AIG-AGT-03", "AIG-DEC-01"]) {
     assert.ok(html.replace(/\s+/g, " ").includes(v.replace(/\s+/g, " ")), v);
   }
 });
